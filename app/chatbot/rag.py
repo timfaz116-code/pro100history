@@ -1,6 +1,7 @@
 import os
-import json
 import math
+import sqlite3
+import struct
 import warnings
 
 warnings.filterwarnings('ignore', category=DeprecationWarning)
@@ -9,9 +10,8 @@ from openai import OpenAI
 from app.chatbot.prompts import SYSTEM_PROMPT, RELEVANCE_CHECK_PROMPT
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-INDEX_PATH = os.path.join(BASE_DIR, 'storage', 'index.json')
-
-_index_cache = None
+DB_PATH = os.path.join(BASE_DIR, 'storage', 'index.db')
+EMBEDDING_DIM = 1536
 
 
 def get_llm_client():
@@ -31,15 +31,21 @@ def get_llm_model():
     return os.environ.get('LLM_MODEL', 'gpt-4o-mini')
 
 
+def blob_to_embedding(blob):
+    n = len(blob) // 4
+    return list(struct.unpack(f'<{n}f', blob))
+
+
 def load_index():
-    global _index_cache
-    if _index_cache is not None:
-        return _index_cache
-    if not os.path.exists(INDEX_PATH):
-        return None
-    with open(INDEX_PATH, 'r', encoding='utf-8') as f:
-        _index_cache = json.load(f)
-    return _index_cache
+    if not os.path.exists(DB_PATH):
+        return None, None
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.execute('SELECT id, text, page FROM chunks ORDER BY id')
+    chunks = [{'text': row[1], 'page': row[2]} for row in cursor.fetchall()]
+    cursor = conn.execute('SELECT id, vec FROM embeddings ORDER BY id')
+    embeddings = [blob_to_embedding(row[1]) for row in cursor.fetchall()]
+    conn.close()
+    return chunks, embeddings
 
 
 def cosine_similarity(a, b):
@@ -61,13 +67,13 @@ def embed_text(text):
 
 
 def search_chunks(query, top_k=5):
-    index = load_index()
-    if index is None or not index['chunks']:
+    chunks, embeddings = load_index()
+    if not chunks:
         return [], [], []
 
     query_emb = embed_text(query)
     similarities = []
-    for i, stored_emb in enumerate(index['embeddings']):
+    for i, stored_emb in enumerate(embeddings):
         sim = cosine_similarity(query_emb, stored_emb)
         similarities.append((sim, i))
 
@@ -78,8 +84,8 @@ def search_chunks(query, top_k=5):
     metadatas = []
     distances = []
     for sim, idx in top:
-        documents.append(index['chunks'][idx]['text'])
-        metadatas.append({'page': str(index['chunks'][idx]['page']) if index['chunks'][idx]['page'] else ''})
+        documents.append(chunks[idx]['text'])
+        metadatas.append({'page': str(chunks[idx]['page']) if chunks[idx]['page'] else ''})
         distances.append(1 - sim)
 
     return documents, metadatas, distances

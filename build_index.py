@@ -16,9 +16,10 @@
 
 import os
 import glob
-import json
 import math
 import re
+import sqlite3
+import struct
 import warnings
 
 warnings.filterwarnings('ignore', category=DeprecationWarning)
@@ -31,9 +32,11 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 KNOWLEDGE_DIR = os.path.join(BASE_DIR, 'knowledge')
 STORAGE_DIR = os.path.join(BASE_DIR, 'storage')
-INDEX_PATH = os.path.join(STORAGE_DIR, 'index.json')
+DB_PATH = os.path.join(STORAGE_DIR, 'index.db')
 
-CHUNK_SIZE = 800
+CHUNK_SIZE = 1000
+EMBEDDING_DIM = 1536
+BATCH_SIZE = 20
 
 
 def get_text_from_pdf(path):
@@ -98,6 +101,40 @@ def clean_text(text):
     return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
 
 
+def embedding_to_blob(vec):
+    return struct.pack(f'<{len(vec)}f', *vec)
+
+
+def blob_to_embedding(blob):
+    n = len(blob) // 4
+    return list(struct.unpack(f'<{n}f', blob))
+
+
+def init_db():
+    os.makedirs(STORAGE_DIR, exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute('PRAGMA journal_mode=OFF')
+    conn.execute('PRAGMA synchronous=OFF')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS chunks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            text TEXT NOT NULL,
+            page INTEGER
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS embeddings (
+            id INTEGER PRIMARY KEY,
+            vec BLOB NOT NULL,
+            FOREIGN KEY (id) REFERENCES chunks(id)
+        )
+    ''')
+    conn.execute('DELETE FROM chunks')
+    conn.execute('DELETE FROM embeddings')
+    conn.commit()
+    return conn
+
+
 def main():
     api_key = os.environ.get('OPENAI_API_KEY', '')
     if not api_key:
@@ -155,12 +192,8 @@ def main():
         client_kwargs['base_url'] = base_url
     client = OpenAI(**client_kwargs)
 
-    index_data = {
-        'chunks': [],
-        'embeddings': [],
-    }
+    conn = init_db()
 
-    BATCH_SIZE = 20
     for start in range(0, len(chunks), BATCH_SIZE):
         end = min(start + BATCH_SIZE, len(chunks))
         batch = chunks[start:end]
@@ -173,18 +206,25 @@ def main():
         )
 
         for i, chunk in enumerate(batch):
-            index_data['chunks'].append(chunk)
-            index_data['embeddings'].append(response.data[i].embedding)
+            cursor = conn.execute(
+                'INSERT INTO chunks (text, page) VALUES (?, ?)',
+                (chunk['text'], chunk['page'])
+            )
+            chunk_id = cursor.lastrowid
+            vec_blob = embedding_to_blob(response.data[i].embedding)
+            conn.execute(
+                'INSERT INTO embeddings (id, vec) VALUES (?, ?)',
+                (chunk_id, vec_blob)
+            )
+        conn.commit()
 
-    os.makedirs(STORAGE_DIR, exist_ok=True)
-    with open(INDEX_PATH, 'w', encoding='utf-8') as f:
-        json.dump(index_data, f, ensure_ascii=False)
+    conn.close()
 
     print()
     print("Готово! Индекс создан.")
     print(f"  Файл: {os.path.basename(source_path)}")
     print(f"  Фрагментов: {len(chunks)}")
-    print(f"  Индекс: {INDEX_PATH}")
+    print(f"  База: {DB_PATH}")
     print()
     print("Теперь можно запустить сайт и задавать вопросы чат-боту.")
 
