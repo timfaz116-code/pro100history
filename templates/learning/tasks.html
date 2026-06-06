@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Задания — {{ topic.name }}{% endblock %}
+{% block content %}
+<h1 class="page-title">{{ topic.name }}</h1>
+<p class="page-subtitle">Пройдите тест по теме. Выберите один правильный ответ для каждого вопроса.</p>
+
+<form id="test-form" data-topic-id="{{ topic.id }}">
+    {% for task in tasks %}
+        <div class="task-card">
+            <h3 class="task-card__num">Вопрос {{ loop.index }}</h3>
+            <p class="task-card__question">{{ task.question }}</p>
+            <div class="task-card__options">
+                {% for option in task.options %}
+                    <label class="option-label">
+                        <input type="radio" name="task_{{ task.id }}" value="{{ option[0] }}" required>
+                        <span>{{ option }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if tasks %}
+        <div class="test-actions">
+            <button type="submit" class="btn btn--primary" id="submit-test">Завершить тест</button>
+        </div>
+    {% else %}
+        <div class="empty-state">Для этого раздела пока нет заданий</div>
+    {% endif %}
+</form>
+
+<div id="test-result" class="test-result" style="display:none;"></div>
+
+<script>
+    document.getElementById('test-form')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const topicId = this.dataset.topicId;
+        const formData = new FormData(this);
+        const answers = {};
+
+        for (const [key, value] of formData.entries()) {
+            const taskId = key.replace('task_', '');
+            answers[taskId] = value;
+        }
+
+        document.getElementById('submit-test').disabled = true;
+
+        const res = await fetch('{{ url_for("learning.submit_test") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic_id: parseInt(topicId), answers })
+        });
+
+        const data = await res.json();
+        const resultDiv = document.getElementById('test-result');
+        const taskCards = document.querySelectorAll('.task-card');
+
+        let html = `
+            <div class="test-result__summary">
+                <h2>Результат теста</h2>
+                <div class="result-score ${data.percent >= 80 ? 'result-score--high' : data.percent >= 40 ? 'result-score--mid' : 'result-score--low'}">
+                    <span class="result-score__value">${data.correct} / ${data.total}</span>
+                    <span class="result-score__pct">${data.percent}%</span>
+                </div>
+                <p>Правильных ответов: ${data.correct} из ${data.total}</p>
+            </div>
+            <div class="test-result__details">
+                <h3>Разбор ответов</h3>
+        `;
+
+        data.details.forEach((d, i) => {
+            const statusClass = d.is_correct ? 'detail--correct' : 'detail--wrong';
+            html += `
+                <div class="detail-item ${statusClass}">
+                    <h4>Вопрос ${i + 1}: ${d.question}</h4>
+                    <p>Ваш ответ: <strong>${d.user_answer || 'не выбран'}</strong> ${d.is_correct ? '&#10004;' : '&#10008;'}</p>
+                    ${!d.is_correct ? `<p>Правильный ответ: <strong>${d.correct_answer}</strong></p>` : ''}
+                    <p class="detail-item__expl">${d.explanation}</p>
+                </div>
+            `;
+        });
+
+        html += '</div></div>';
+        resultDiv.innerHTML = html;
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    });
+</script>
+{% endblock %}

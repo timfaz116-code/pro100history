@@ -1,0 +1,253 @@
+<!-- ОКНО РЕГИСТРАЦИИ для PRO100 История -->
+<!-- Вставьте этот код в Tilda через блок "HTML-код" (T123) -->
+
+<style>
+  .p100-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Tilda Sans', Arial, sans-serif;
+  }
+  .p100-modal-overlay.active {
+    display: flex;
+  }
+  .p100-modal {
+    background: #faf0e3;
+    border-radius: 30px;
+    padding: 40px 36px 36px;
+    width: 420px;
+    max-width: 92vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    position: relative;
+    animation: p100FadeIn 0.3s ease;
+  }
+  @keyframes p100FadeIn {
+    from { opacity: 0; transform: scale(0.92) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .p100-modal-close {
+    position: absolute;
+    top: 14px; right: 18px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #b1443d;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 50%;
+    transition: background 0.2s;
+  }
+  .p100-modal-close:hover {
+    background: rgba(177,68,61,0.1);
+  }
+  .p100-modal h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #b1443d;
+    margin: 0 0 6px;
+    text-align: center;
+  }
+  .p100-modal .p100-sub {
+    font-size: 14px;
+    color: #6b5a4a;
+    text-align: center;
+    margin: 0 0 28px;
+    font-weight: 400;
+  }
+  .p100-field {
+    margin-bottom: 18px;
+  }
+  .p100-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a3f35;
+    margin-bottom: 5px;
+  }
+  .p100-field input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 2px solid #d4c4b0;
+    border-radius: 14px;
+    background: #fffbf7;
+    color: #333;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.25s;
+  }
+  .p100-field input:focus {
+    border-color: #b1443d;
+  }
+  .p100-field input::placeholder {
+    color: #b5a795;
+  }
+  .p100-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: #6b5a4a;
+    margin-bottom: 22px;
+    line-height: 1.4;
+  }
+  .p100-checkbox input {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    accent-color: #b1443d;
+    flex-shrink: 0;
+  }
+  .p100-checkbox a {
+    color: #b1443d;
+    text-decoration: underline;
+  }
+  .p100-submit {
+    width: 100%;
+    padding: 14px;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: inherit;
+    background: #ffffff;
+    color: #b1443d;
+    border: 2px solid #b1443d;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .p100-submit:hover {
+    background: #b1443d;
+    color: #ffffff;
+  }
+  .p100-modal .p100-login-link {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 13px;
+    color: #6b5a4a;
+  }
+  .p100-modal .p100-login-link a {
+    color: #b1443d;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .p100-modal .p100-login-link a:hover {
+    text-decoration: underline;
+  }
+  .p100-error {
+    color: #c0392b;
+    font-size: 12px;
+    margin-top: 4px;
+    display: none;
+  }
+  .p100-error.show {
+    display: block;
+  }
+  /* Стиль для кнопки открытия — вставьте её в любое место сайта */
+  .p100-open-btn {
+    display: inline-block;
+    padding: 14px 40px;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: 'Tilda Sans', Arial, sans-serif;
+    background: #ffffff;
+    color: #b1443d;
+    border: 2px solid #b1443d;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+  }
+  .p100-open-btn:hover {
+    background: #b1443d;
+    color: #ffffff;
+  }
+</style>
+
+<!-- Кнопка открытия окна регистрации -->
+<button class="p100-open-btn" onclick="document.querySelector('.p100-modal-overlay').classList.add('active')">
+  РЕГИСТРАЦИЯ
+</button>
+
+<!-- Окно регистрации (модальное) -->
+<div class="p100-modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
+  <div class="p100-modal">
+    <button class="p100-modal-close" onclick="this.closest('.p100-modal-overlay').classList.remove('active')">&times;</button>
+    <h2>Регистрация</h2>
+    <p class="p100-sub">Создайте аккаунт для доступа к курсу</p>
+
+    <form id="p100RegisterForm" onsubmit="return p100HandleRegister(event)">
+      <div class="p100-field">
+        <label for="p100Name">ФИО</label>
+        <input type="text" id="p100Name" placeholder="Иванов Иван Иванович" required>
+      </div>
+
+      <div class="p100-field">
+        <label for="p100Email">Электронная почта</label>
+        <input type="email" id="p100Email" placeholder="ivanov@example.com" required>
+      </div>
+
+      <div class="p100-field">
+        <label for="p100Phone">Телефон</label>
+        <input type="tel" id="p100Phone" placeholder="+7 (999) 123-45-67" required>
+      </div>
+
+      <div class="p100-field">
+        <label for="p100Password">Пароль</label>
+        <input type="password" id="p100Password" placeholder="Не менее 6 символов" minlength="6" required>
+      </div>
+
+      <div class="p100-field">
+        <label for="p100PasswordConfirm">Подтвердите пароль</label>
+        <input type="password" id="p100PasswordConfirm" placeholder="Введите пароль ещё раз" required>
+      </div>
+
+      <div class="p100-checkbox">
+        <input type="checkbox" id="p100Agree" required>
+        <label for="p100Agree">Я согласен с <a href="#" onclick="event.preventDefault()">политикой конфиденциальности</a> и даю согласие на обработку персональных данных</label>
+      </div>
+
+      <div class="p100-error" id="p100Error"></div>
+
+      <button type="submit" class="p100-submit">СОЗДАТЬ АККАУНТ</button>
+    </form>
+
+    <div class="p100-login-link">
+      Уже есть аккаунт? <a onclick="document.querySelector('.p100-modal-overlay').classList.remove('active')">Войти</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function p100HandleRegister(e) {
+  e.preventDefault();
+  var errorEl = document.getElementById('p100Error');
+  errorEl.classList.remove('show');
+
+  var name = document.getElementById('p100Name').value.trim();
+  var email = document.getElementById('p100Email').value.trim();
+  var phone = document.getElementById('p100Phone').value.trim();
+  var password = document.getElementById('p100Password').value;
+  var confirm = document.getElementById('p100PasswordConfirm').value;
+
+  if (!name) { errorEl.textContent = 'Введите ФИО'; errorEl.classList.add('show'); return false; }
+  if (!email) { errorEl.textContent = 'Введите email'; errorEl.classList.add('show'); return false; }
+  if (!phone) { errorEl.textContent = 'Введите телефон'; errorEl.classList.add('show'); return false; }
+  if (password.length < 6) { errorEl.textContent = 'Пароль должен быть не менее 6 символов'; errorEl.classList.add('show'); return false; }
+  if (password !== confirm) { errorEl.textContent = 'Пароли не совпадают'; errorEl.classList.add('show'); return false; }
+  if (!document.getElementById('p100Agree').checked) { errorEl.textContent = 'Примите соглашение об обработке данных'; errorEl.classList.add('show'); return false; }
+
+  alert('Регистрация прошла успешно!\n\nФИО: ' + name + '\nEmail: ' + email + '\nТелефон: ' + phone);
+  document.querySelector('.p100-modal-overlay').classList.remove('active');
+  return false;
+}
+</script>

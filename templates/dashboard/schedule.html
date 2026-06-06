@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Расписание{% endblock %}
+{% block content %}
+<h1 class="page-title">Расписание занятий</h1>
+
+<div class="schedule">
+    {% if lessons %}
+        <div class="schedule__grid">
+            {% for lesson in lessons %}
+                <div class="schedule-card {% if lesson.status == 'completed' %}schedule-card--done{% elif lesson.status == 'cancelled' %}schedule-card--cancelled{% endif %}">
+                    <div class="schedule-card__date">
+                        <span class="schedule-card__day">{{ lesson.date.strftime('%d') }}</span>
+                        <span class="schedule-card__month">{{ lesson.date.strftime('%b') }}</span>
+                    </div>
+                    <div class="schedule-card__body">
+                        <h3 class="schedule-card__topic">{{ lesson.topic }}</h3>
+                        <div class="schedule-card__meta">
+                            <span class="schedule-card__time">{{ lesson.time }}</span>
+                            <span class="badge badge--{{ lesson.format }}">{{ 'Онлайн' if lesson.format == 'online' else 'Офлайн' }}</span>
+                            <span class="badge badge--status badge--{{ lesson.status }}">{{ lesson.status }}</span>
+                        </div>
+                        {% if lesson.description %}
+                            <p class="schedule-card__desc">{{ lesson.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-state">Расписание пока не заполнено</p>
+    {% endif %}
+</div>
+{% endblock %}

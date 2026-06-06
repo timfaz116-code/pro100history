@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Обучение{% endblock %}
+{% block content %}
+<h1 class="page-title">Разделы подготовки</h1>
+
+<div class="topics-grid">
+    {% for t in topics %}
+        <a href="{{ url_for('learning.tasks', topic_id=t.id) }}" class="topic-card topic-card--link">
+            <div class="topic-card__header">
+                <h3 class="topic-card__name">{{ t.name }}</h3>
+                <span class="topic-card__status topic-card__status--{{ t.status }}">
+                    {% if t.status == 'completed' %}Завершено
+                    {% elif t.status == 'in_progress' %}В процессе
+                    {% else %}Не начато{% endif %}
+                </span>
+            </div>
+            {% if t.description %}
+                <p class="topic-card__desc">{{ t.description[:150] }}{% if t.description|length > 150 %}...{% endif %}</p>
+            {% endif %}
+            <div class="topic-card__stats">
+                <span>{{ t.materials_count }} материалов</span>
+                <span>{{ t.tasks_count }} заданий</span>
+            </div>
+            <div class="progress-bar progress-bar--sm">
+                <div class="progress-bar__fill {% if t.progress == 100 %}progress-bar__fill--done{% elif t.progress > 0 %}progress-bar__fill--half{% endif %}"
+                     style="width: {{ t.progress }}%"></div>
+            </div>
+        </a>
+    {% endfor %}
+</div>
+{% endblock %}

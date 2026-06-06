@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Подготовка к ЕГЭ по истории{% endblock %}
+{% block content %}
+<section class="hero">
+    <h1 class="hero__title">Подготовка к ЕГЭ по истории</h1>
+    <p class="hero__subtitle">Индивидуальный план обучения, расписание занятий и отслеживание прогресса — всё в одном месте</p>
+    <div class="hero__actions">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn--primary">Войти в кабинет</a>
+        {% else %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn--primary">Начать подготовку</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn--outline">Уже есть аккаунт</a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="hero__features">
+    <div class="feature-card">
+        <div class="feature-card__icon">📅</div>
+        <h3>Расписание</h3>
+        <p>Чёткий график занятий, чтобы ничего не пропустить</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-card__icon">📊</div>
+        <h3>Прогресс</h3>
+        <p>Наглядная статистика по темам и результатам тестов</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-card__icon">📝</div>
+        <h3>Задания</h3>
+        <p>Практика по всем разделам кодификатора ЕГЭ</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-card__icon">🎯</div>
+        <h3>Цели</h3>
+        <p>Персональные рекомендации на основе твоих результатов</p>
+    </div>
+</section>
+{% endblock %}

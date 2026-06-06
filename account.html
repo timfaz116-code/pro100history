@@ -1,0 +1,753 @@
+<!-- ЕДИНАЯ СТРАНИЦА: Вход / Регистрация / Личный кабинет -->
+<!-- Вставьте в Tilda через блок "HTML-код" (T123) -->
+
+<style>
+  * { box-sizing: border-box; }
+  .p100-cabinet {
+    font-family: 'Tilda Sans', Arial, sans-serif;
+    background: #f2ddc4;
+    min-height: 100vh;
+    padding: 30px 20px;
+    color: #2c241c;
+  }
+  .p100-cabinet-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  /* ===== ШАПКА ===== */
+  .p100-cab-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #faf0e3;
+    border-radius: 24px;
+    padding: 18px 28px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .p100-cab-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .p100-cab-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #b1443d;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .p100-cab-user h3 {
+    margin: 0 0 2px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c241c;
+  }
+  .p100-cab-user p {
+    margin: 0;
+    font-size: 13px;
+    color: #7a6a58;
+  }
+  .p100-cab-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .p100-badge {
+    display: inline-block;
+    background: #b1443d;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+  }
+  .p100-btn-logout {
+    padding: 8px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    background: #fff;
+    color: #b1443d;
+    border: 2px solid #b1443d;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .p100-btn-logout:hover {
+    background: #b1443d;
+    color: #fff;
+  }
+
+  /* ===== СЕТКА КАРТОЧЕК ===== */
+  .p100-cab-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  .p100-card {
+    background: #faf0e3;
+    border-radius: 24px;
+    padding: 24px 26px;
+  }
+  .p100-card-full {
+    grid-column: 1 / -1;
+  }
+  .p100-card h4 {
+    margin: 0 0 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #b1443d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Прогресс */
+  .p100-progress-bar {
+    height: 10px;
+    background: #e2d0ba;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .p100-progress-fill {
+    height: 100%;
+    background: #b1443d;
+    border-radius: 6px;
+    transition: width 0.6s ease;
+  }
+  .p100-progress-label {
+    font-size: 13px;
+    color: #7a6a58;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Модули */
+  .p100-module-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #e2d0ba;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .p100-module-item:last-child { border-bottom: none; }
+  .p100-module-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #d4c4b0;
+    flex-shrink: 0;
+  }
+  .p100-module-dot.done { background: #b1443d; }
+  .p100-module-dot.active { background: #b1443d; box-shadow: 0 0 0 3px rgba(177,68,61,0.25); }
+  .p100-module-info { flex: 1; }
+  .p100-module-info strong {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 1px;
+  }
+  .p100-module-info span {
+    font-size: 12px;
+    color: #7a6a58;
+  }
+
+  /* Расписание */
+  .p100-schedule-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2d0ba;
+    font-size: 14px;
+  }
+  .p100-schedule-item:last-child { border-bottom: none; }
+  .p100-schedule-date { color: #7a6a58; }
+  .p100-schedule-tag {
+    font-size: 11px;
+    background: #e2d0ba;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  .p100-schedule-tag.live { background: #b1443d; color: #fff; }
+
+  /* Результаты */
+  .p100-result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #e2d0ba;
+  }
+  .p100-result-row:last-child { border-bottom: none; }
+  .p100-result-score { font-weight: 700; color: #b1443d; }
+
+  /* Материалы */
+  .p100-materials {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .p100-mat-item {
+    background: #fffbf7;
+    border: 1px solid #e2d0ba;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    text-align: center;
+    font-weight: 600;
+  }
+  .p100-mat-item:hover { border-color: #b1443d; }
+
+  /* ===== ФОРМА ВХОДА ===== */
+  .p100-login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+  }
+  .p100-login-box {
+    background: #faf0e3;
+    border-radius: 30px;
+    padding: 44px 40px 38px;
+    width: 420px;
+    max-width: 92vw;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  }
+  .p100-login-box h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #b1443d;
+    text-align: center;
+    margin: 0 0 6px;
+  }
+  .p100-login-box .p100-sub {
+    text-align: center;
+    font-size: 14px;
+    color: #7a6a58;
+    margin: 0 0 28px;
+  }
+
+  /* ===== ПОЛЯ (общие) ===== */
+  .p100-field {
+    margin-bottom: 18px;
+  }
+  .p100-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a3f35;
+    margin-bottom: 5px;
+  }
+  .p100-field input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 2px solid #d4c4b0;
+    border-radius: 14px;
+    background: #fffbf7;
+    color: #333;
+    outline: none;
+    transition: border-color 0.25s;
+  }
+  .p100-field input:focus { border-color: #b1443d; }
+  .p100-field input::placeholder { color: #b5a795; }
+
+  .p100-form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .p100-form-footer a {
+    color: #b1443d;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .p100-form-footer a:hover { text-decoration: underline; }
+
+  .p100-btn-primary {
+    width: 100%;
+    padding: 14px;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: inherit;
+    background: #ffffff;
+    color: #b1443d;
+    border: 2px solid #b1443d;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .p100-btn-primary:hover {
+    background: #b1443d;
+    color: #ffffff;
+  }
+  .p100-login-box .p100-reg-link {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 13px;
+    color: #7a6a58;
+  }
+  .p100-login-box .p100-reg-link a {
+    color: #b1443d;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .p100-login-box .p100-reg-link a:hover { text-decoration: underline; }
+
+  .p100-error {
+    color: #c0392b;
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: none;
+    text-align: center;
+  }
+  .p100-error.show { display: block; }
+
+  /* ===== МОДАЛЬНОЕ ОКНО РЕГИСТРАЦИИ ===== */
+  .p100-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+  }
+  .p100-modal-overlay.active {
+    display: flex;
+  }
+  .p100-modal {
+    background: #faf0e3;
+    border-radius: 30px;
+    padding: 40px 36px 36px;
+    width: 440px;
+    max-width: 92vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    position: relative;
+    animation: p100FadeIn 0.3s ease;
+  }
+  @keyframes p100FadeIn {
+    from { opacity: 0; transform: scale(0.92) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .p100-modal-close {
+    position: absolute;
+    top: 14px; right: 18px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #b1443d;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 50%;
+    transition: background 0.2s;
+  }
+  .p100-modal-close:hover { background: rgba(177,68,61,0.1); }
+  .p100-modal h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #b1443d;
+    margin: 0 0 6px;
+    text-align: center;
+  }
+  .p100-modal .p100-sub {
+    font-size: 14px;
+    color: #6b5a4a;
+    text-align: center;
+    margin: 0 0 24px;
+    font-weight: 400;
+  }
+  .p100-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: #6b5a4a;
+    margin-bottom: 22px;
+    line-height: 1.4;
+  }
+  .p100-checkbox input {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    accent-color: #b1443d;
+    flex-shrink: 0;
+  }
+  .p100-checkbox a {
+    color: #b1443d;
+    text-decoration: underline;
+  }
+  .p100-modal .p100-login-link {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 13px;
+    color: #6b5a4a;
+  }
+  .p100-modal .p100-login-link a {
+    color: #b1443d;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .p100-modal .p100-login-link a:hover { text-decoration: underline; }
+
+  /* ===== АДАПТИВ ===== */
+  @media (max-width: 700px) {
+    .p100-cab-grid { grid-template-columns: 1fr; }
+    .p100-materials { grid-template-columns: 1fr; }
+    .p100-cab-header { flex-direction: column; align-items: stretch; text-align: center; }
+    .p100-cab-header-left { flex-direction: column; }
+    .p100-cab-header-right { justify-content: center; }
+    .p100-login-box, .p100-modal { padding: 32px 24px; }
+  }
+</style>
+
+<!-- ============================================= -->
+<!-- ЕДИНЫЙ КОНТЕЙНЕР -->
+<!-- ============================================= -->
+<div class="p100-cabinet" id="p100App">
+
+  <!-- === ФОРМА ВХОДА === -->
+  <div id="p100LoginView">
+    <div class="p100-login-wrapper">
+      <div class="p100-login-box">
+        <h1>Вход в аккаунт</h1>
+        <p class="p100-sub">Войдите, чтобы продолжить обучение</p>
+
+        <form id="p100LoginForm" onsubmit="return p100Login(event)">
+          <div class="p100-field">
+            <label for="p100LoginEmail">Электронная почта</label>
+            <input type="email" id="p100LoginEmail" placeholder="ivanov@example.com" required>
+          </div>
+          <div class="p100-field">
+            <label for="p100LoginPassword">Пароль</label>
+            <input type="password" id="p100LoginPassword" placeholder="Ваш пароль" required>
+          </div>
+
+          <div class="p100-form-footer">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" style="accent-color:#b1443d"> Запомнить меня
+            </label>
+            <a href="#" onclick="event.preventDefault();alert('Функция восстановления пароля будет доступна позже')">Забыли пароль?</a>
+          </div>
+
+          <div class="p100-error" id="p100LoginError">Неверный email или пароль</div>
+
+          <button type="submit" class="p100-btn-primary">ВОЙТИ</button>
+        </form>
+
+        <div class="p100-reg-link">
+          Нет аккаунта? <a onclick="p100OpenRegister()">Зарегистрироваться</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === ЛИЧНЫЙ КАБИНЕТ === -->
+  <div id="p100CabinetView" style="display:none">
+    <div class="p100-cabinet-inner">
+
+      <div class="p100-cab-header">
+        <div class="p100-cab-header-left">
+          <div class="p100-cab-avatar" id="p100Avatar">М</div>
+          <div class="p100-cab-user">
+            <h3 id="p100UserName">Мария Романова</h3>
+            <p id="p100UserEmail">maria@example.com</p>
+          </div>
+        </div>
+        <div class="p100-cab-header-right">
+          <span class="p100-badge">Тариф: Годовой</span>
+          <button class="p100-btn-logout" onclick="p100Logout()">Выйти</button>
+        </div>
+      </div>
+
+      <div class="p100-cab-grid">
+
+        <div class="p100-card p100-card-full">
+          <h4>&#128200; Прогресс курса</h4>
+          <div class="p100-progress-bar">
+            <div class="p100-progress-fill" style="width:68%"></div>
+          </div>
+          <div class="p100-progress-label">
+            <span>Пройдено: 22 из 32 модулей</span>
+            <span>68%</span>
+          </div>
+        </div>
+
+        <div class="p100-card">
+          <h4>&#128197; Программа курса</h4>
+          <div class="p100-module-item">
+            <div class="p100-module-dot done"></div>
+            <div class="p100-module-info">
+              <strong>Александр II и общественная мысль</strong>
+              <span>1 неделя сентября</span>
+            </div>
+          </div>
+          <div class="p100-module-item">
+            <div class="p100-module-dot done"></div>
+            <div class="p100-module-info">
+              <strong>Александр III и Николай II</strong>
+              <span>2 неделя сентября</span>
+            </div>
+          </div>
+          <div class="p100-module-item">
+            <div class="p100-module-dot active"></div>
+            <div class="p100-module-info">
+              <strong>Первая российская революция</strong>
+              <span>3 неделя сентября — Сейчас</span>
+            </div>
+          </div>
+          <div class="p100-module-item">
+            <div class="p100-module-dot"></div>
+            <div class="p100-module-info">
+              <strong>Первая Мировая война</strong>
+              <span>4 неделя сентября</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p100-card">
+          <h4>&#128197; Ближайшие вебинары</h4>
+          <div class="p100-schedule-item">
+            <span>Разбор домашнего задания</span>
+            <span class="p100-schedule-date">Завтра, 18:00</span>
+          </div>
+          <div class="p100-schedule-item">
+            <span>Вебинар: Революция 1917</span>
+            <span class="p100-schedule-date">14 сен, 17:00</span>
+          </div>
+          <div class="p100-schedule-item">
+            <span>Пробный экзамен</span>
+            <span class="p100-schedule-tag live">Скоро</span>
+          </div>
+          <div class="p100-schedule-item">
+            <span>Консультация с куратором</span>
+            <span class="p100-schedule-date">20 сен, 15:00</span>
+          </div>
+        </div>
+
+        <div class="p100-card">
+          <h4>&#127942; Мои результаты</h4>
+          <div class="p100-result-row">
+            <span>Пробник #1 (сентябрь)</span>
+            <span class="p100-result-score">58 баллов</span>
+          </div>
+          <div class="p100-result-row">
+            <span>Пробник #2 (октябрь)</span>
+            <span class="p100-result-score">72 балла</span>
+          </div>
+          <div class="p100-result-row">
+            <span>Пробник #3 (ноябрь)</span>
+            <span class="p100-result-score">—</span>
+          </div>
+          <div class="p100-result-row" style="border-bottom:none;padding-top:10px;font-weight:600">
+            <span>Целевой балл</span>
+            <span style="color:#b1443d">90+ баллов</span>
+          </div>
+        </div>
+
+        <div class="p100-card">
+          <h4>&#128221; Домашние задания</h4>
+          <div class="p100-result-row">
+            <span>Тема: Александр II</span>
+            <span class="p100-badge" style="font-size:11px;padding:2px 10px">Проверено</span>
+          </div>
+          <div class="p100-result-row">
+            <span>Тема: Александр III</span>
+            <span class="p100-badge" style="font-size:11px;padding:2px 10px;background:#e2d0ba;color:#5a4a3a">Ожидает</span>
+          </div>
+          <div class="p100-result-row" style="border-bottom:none">
+            <span>Тема: Революция</span>
+            <span class="p100-badge" style="font-size:11px;padding:2px 10px;background:#e2d0ba;color:#5a4a3a">Не сдано</span>
+          </div>
+        </div>
+
+        <div class="p100-card">
+          <h4>&#128218; Материалы</h4>
+          <div class="p100-materials">
+            <div class="p100-mat-item">&#128196; Конспект IX-XV вв.</div>
+            <div class="p100-mat-item">&#128196; Конспект XVI-XVII вв.</div>
+            <div class="p100-mat-item">&#127911; Аудиолекции</div>
+            <div class="p100-mat-item">&#128202; Карты и схемы</div>
+          </div>
+        </div>
+
+        <div class="p100-card">
+          <h4>&#128172; Мой куратор</h4>
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+            <div style="width:44px;height:44px;border-radius:50%;background:#b1443d;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px">ЕК</div>
+            <div>
+              <strong style="font-size:15px">Екатерина Громова</strong>
+              <div style="font-size:12px;color:#7a6a58">Куратор курса</div>
+            </div>
+          </div>
+          <button class="p100-btn-primary" style="font-size:13px;padding:10px" onclick="alert('Чат с куратором откроется здесь')">НАПИСАТЬ КУРАТОРУ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === МОДАЛЬНОЕ ОКНО РЕГИСТРАЦИИ === -->
+<div class="p100-modal-overlay" id="p100RegisterOverlay" onclick="if(event.target===this)this.classList.remove('active')">
+  <div class="p100-modal">
+    <button class="p100-modal-close" onclick="p100CloseRegister()">&times;</button>
+    <h2>Регистрация</h2>
+    <p class="p100-sub">Создайте аккаунт для доступа к курсу</p>
+
+    <form id="p100RegisterForm" onsubmit="return p100HandleRegister(event)">
+      <div class="p100-field">
+        <label for="p100Name">ФИО</label>
+        <input type="text" id="p100Name" placeholder="Иванов Иван Иванович" required>
+      </div>
+
+      <div class="p100-field">
+        <label for="p100RegEmail">Электронная почта</label>
+        <input type="email" id="p100RegEmail" placeholder="ivanov@example.com" required>
+      </div>
+
+      <div class="p100-field">
+        <label for="p100Phone">Телефон</label>
+        <input type="tel" id="p100Phone" placeholder="+7 (999) 123-45-67" required>
+      </div>
+
+      <div class="p100-field">
+        <label for="p100Password">Пароль</label>
+        <input type="password" id="p100Password" placeholder="Не менее 6 символов" minlength="6" required>
+      </div>
+
+      <div class="p100-field">
+        <label for="p100PasswordConfirm">Подтвердите пароль</label>
+        <input type="password" id="p100PasswordConfirm" placeholder="Введите пароль ещё раз" required>
+      </div>
+
+      <div class="p100-checkbox">
+        <input type="checkbox" id="p100Agree" required>
+        <label for="p100Agree">Я согласен с <a href="#" onclick="event.preventDefault()">политикой конфиденциальности</a> и даю согласие на обработку персональных данных</label>
+      </div>
+
+      <div class="p100-error" id="p100RegError"></div>
+
+      <button type="submit" class="p100-btn-primary">СОЗДАТЬ АККАУНТ</button>
+    </form>
+
+    <div class="p100-login-link">
+      Уже есть аккаунт? <a onclick="p100CloseRegister()">Войти</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// Открыть / закрыть регистрацию
+function p100OpenRegister() {
+  document.getElementById('p100RegisterOverlay').classList.add('active');
+}
+function p100CloseRegister() {
+  document.getElementById('p100RegisterOverlay').classList.remove('active');
+  document.getElementById('p100RegError').classList.remove('show');
+}
+
+// Переключение на личный кабинет
+function p100EnterCabinet(user) {
+  document.getElementById('p100LoginView').style.display = 'none';
+  document.getElementById('p100CabinetView').style.display = 'block';
+  document.getElementById('p100UserName').textContent = user.name;
+  document.getElementById('p100UserEmail').textContent = user.email;
+  document.getElementById('p100Avatar').textContent = user.name.charAt(0).toUpperCase();
+  document.getElementById('p100LoginForm').reset();
+  document.getElementById('p100LoginError').classList.remove('show');
+}
+
+// Вход
+function p100Login(e) {
+  e.preventDefault();
+  var errorEl = document.getElementById('p100LoginError');
+  errorEl.classList.remove('show');
+
+  var email = document.getElementById('p100LoginEmail').value.trim();
+  var password = document.getElementById('p100LoginPassword').value;
+
+  if (!email) { errorEl.textContent = 'Введите email'; errorEl.classList.add('show'); return false; }
+  if (!password) { errorEl.textContent = 'Введите пароль'; errorEl.classList.add('show'); return false; }
+
+  // Проверка тестового пользователя
+  if (email === 'maria@example.com' && password === '123456') {
+    p100EnterCabinet({ name: 'Мария Романова', email: 'maria@example.com' });
+    return false;
+  }
+
+  // Проверка пользователя, созданного через регистрацию
+  var stored = localStorage.getItem('p100_user');
+  if (stored) {
+    var u = JSON.parse(stored);
+    if (email === u.email && password === u.password) {
+      p100EnterCabinet({ name: u.name, email: u.email });
+      return false;
+    }
+  }
+
+  errorEl.textContent = 'Неверный email или пароль';
+  errorEl.classList.add('show');
+  return false;
+}
+
+// Регистрация
+function p100HandleRegister(e) {
+  e.preventDefault();
+  var errorEl = document.getElementById('p100RegError');
+  errorEl.classList.remove('show');
+
+  var name = document.getElementById('p100Name').value.trim();
+  var email = document.getElementById('p100RegEmail').value.trim();
+  var phone = document.getElementById('p100Phone').value.trim();
+  var password = document.getElementById('p100Password').value;
+  var confirm = document.getElementById('p100PasswordConfirm').value;
+
+  if (!name) { errorEl.textContent = 'Введите ФИО'; errorEl.classList.add('show'); return false; }
+  if (!email) { errorEl.textContent = 'Введите email'; errorEl.classList.add('show'); return false; }
+  if (!phone) { errorEl.textContent = 'Введите телефон'; errorEl.classList.add('show'); return false; }
+  if (password.length < 6) { errorEl.textContent = 'Пароль должен быть не менее 6 символов'; errorEl.classList.add('show'); return false; }
+  if (password !== confirm) { errorEl.textContent = 'Пароли не совпадают'; errorEl.classList.add('show'); return false; }
+  if (!document.getElementById('p100Agree').checked) { errorEl.textContent = 'Примите соглашение об обработке данных'; errorEl.classList.add('show'); return false; }
+
+  // Сохраняем в localStorage и входим
+  var user = { name: name, email: email, phone: phone, password: password };
+  localStorage.setItem('p100_user', JSON.stringify(user));
+
+  p100CloseRegister();
+  document.getElementById('p100RegisterForm').reset();
+
+  // Автовход в кабинет
+  p100EnterCabinet({ name: user.name, email: user.email });
+  return false;
+}
+
+// Выход
+function p100Logout() {
+  document.getElementById('p100CabinetView').style.display = 'none';
+  document.getElementById('p100LoginView').style.display = 'block';
+  document.getElementById('p100LoginForm').reset();
+  document.getElementById('p100LoginError').classList.remove('show');
+}
+</script>

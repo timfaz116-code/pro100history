@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Прогресс{% endblock %}
+{% block content %}
+<h1 class="page-title">Мой прогресс</h1>
+
+<div class="progress-summary">
+    <div class="stat-card">
+        <span class="stat-card__value">{{ total_progress }}%</span>
+        <span class="stat-card__label">Общий прогресс</span>
+        <div class="progress-bar">
+            <div class="progress-bar__fill" style="width: {{ total_progress }}%"></div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-card__value">{{ completed_topics }} / {{ total_topics }}</span>
+        <span class="stat-card__label">Пройдено тем</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-card__value">{{ total_tasks_done }}</span>
+        <span class="stat-card__label">Выполнено заданий</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-card__value">{{ avg_score }}%</span>
+        <span class="stat-card__label">Средний результат</span>
+    </div>
+</div>
+
+<h2 class="section-title">Прогресс по разделам</h2>
+<div class="topics-progress">
+    {% for tp in topic_progress_list %}
+        <div class="topic-card">
+            <div class="topic-card__header">
+                <h3 class="topic-card__name">{{ tp.name }}</h3>
+                <span class="topic-card__status topic-card__status--{{ tp.status }}">
+                    {% if tp.status == 'completed' %}Завершено
+                    {% elif tp.status == 'in_progress' %}В процессе
+                    {% else %}Не начато{% endif %}
+                </span>
+            </div>
+            {% if tp.description %}
+                <p class="topic-card__desc">{{ tp.description[:120] }}{% if tp.description|length > 120 %}...{% endif %}</p>
+            {% endif %}
+            <div class="topic-card__stats">
+                <span>Материалов: {{ tp.materials_count }}</span>
+                <span>Заданий: {{ tp.tasks_count }}</span>
+                {% if tp.avg_score > 0 %}
+                    <span class="{% if tp.avg_score < 40 %}text-danger{% elif tp.avg_score >= 80 %}text-success{% else %}text-warning{% endif %}">
+                        Средний балл: {{ tp.avg_score }}%
+                    </span>
+                {% endif %}
+            </div>
+            <div class="progress-bar progress-bar--sm">
+                <div class="progress-bar__fill {% if tp.progress == 100 %}progress-bar__fill--done{% elif tp.progress > 0 %}progress-bar__fill--half{% endif %}"
+                     style="width: {{ tp.progress }}%"></div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% if weak_topics %}
+    <div class="insight-block insight-block--warn">
+        <h3>Слабые темы (результат ниже 40%)</h3>
+        <ul>
+            {% for t in weak_topics %}
+                <li>{{ t.name }} — {{ t.avg_score }}%</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+{% if strong_topics %}
+    <div class="insight-block insight-block--success">
+        <h3>Сильные темы (результат от 80%)</h3>
+        <ul>
+            {% for t in strong_topics %}
+                <li>{{ t.name }} — {{ t.avg_score }}%</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% endblock %}

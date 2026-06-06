@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Результат теста{% endblock %}
+{% block content %}
+<h1 class="page-title">Результат теста</h1>
+
+<div class="test-result">
+    <div class="test-result__summary">
+        <h2>{{ topic.name }}</h2>
+        <div class="result-score {% if result.score / result.total * 100 >= 80 %}result-score--high{% elif result.score / result.total * 100 >= 40 %}result-score--mid{% else %}result-score--low{% endif %}">
+            <span class="result-score__value">{{ result.score }} / {{ result.total }}</span>
+            <span class="result-score__pct">{{ (result.score / result.total * 100) | round }}%</span>
+        </div>
+        <p>Правильных ответов: {{ result.score }} из {{ result.total }}</p>
+        <p class="text-muted">Дата: {{ result.completed_at.strftime('%d.%m.%Y %H:%M') }}</p>
+    </div>
+    <a href="{{ url_for('learning.tasks', topic_id=result.topic_id) }}" class="btn btn--outline">Пройти ещё раз</a>
+    <a href="{{ url_for('learning.topics') }}" class="btn btn--outline">К списку тем</a>
+</div>
+{% endblock %}

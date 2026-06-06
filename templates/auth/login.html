@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<div class="form-page">
+    <div class="form-card">
+        <h2 class="form-card__title">Вход в систему</h2>
+        <p class="form-card__subtitle">Войдите, чтобы продолжить подготовку</p>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.email.label(class='form-label') }}
+                {{ form.email(class='form-input', placeholder='Введите email') }}
+                {% for error in form.email.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.password.label(class='form-label') }}
+                {{ form.password(class='form-input', placeholder='Введите пароль') }}
+                {% for error in form.password.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            {{ form.submit(class='btn btn--primary form-submit') }}
+        </form>
+        <p class="form-card__footer">Нет аккаунта? <a href="{{ url_for('auth.register') }}">Зарегистрируйтесь</a></p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+<button class="chatbot-btn" id="chatbotBtn" aria-label="Открыть чат">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+</button>
+
+<div class="chatbot-overlay" id="chatbotOverlay"></div>
+
+<div class="chatbot-widget" id="chatbotWidget">
+    <div class="chatbot-header">
+        <div class="chatbot-header__icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+        </div>
+        <div>
+            <div class="chatbot-header__title">Исторический помощник</div>
+            <div class="chatbot-header__status">отвечает по учебнику</div>
+        </div>
+        <button class="chatbot-close" id="chatbotClose" aria-label="Закрыть чат">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="chatbot-messages" id="chatbotMessages">
+        <div class="chatbot-message chatbot-message--bot">
+            <div class="chatbot-message__avatar">И</div>
+            <div class="chatbot-message__content">
+                <p>Здравствуйте! Я — ИИисторик, помощник по истории. Задайте мне вопрос по учебнику истории для 11 класса, авторы: В.Р.Мединский, А.В Торкунов.</p>
+            </div>
+        </div>
+    </div>
+    <div class="chatbot-input-area">
+        <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Задайте вопрос по истории..." autocomplete="off">
+        <button class="chatbot-send" id="chatbotSend" aria-label="Отправить">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+        </button>
+    </div>
+</div>

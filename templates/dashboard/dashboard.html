@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Личный кабинет{% endblock %}
+{% block content %}
+<h1 class="page-title">Здравствуйте, {{ current_user.username }}!</h1>
+
+<div class="dashboard-grid">
+    <div class="dash-card dash-card--progress">
+        <h3>Общий прогресс</h3>
+        <div class="progress-ring">
+            <svg viewBox="0 0 120 120" class="progress-ring__svg">
+                <circle cx="60" cy="60" r="54" class="progress-ring__bg"/>
+                <circle cx="60" cy="60" r="54" class="progress-ring__fill"
+                    stroke-dasharray="339.292"
+                    stroke-dashoffset="{{ 339.292 - (339.292 * total_progress / 100) }}"/>
+            </svg>
+            <span class="progress-ring__text">{{ total_progress }}%</span>
+        </div>
+        <p class="dash-card__stat">Тем: {{ completed_topics }} / {{ total_topics }}</p>
+    </div>
+
+    <div class="dash-card">
+        <h3>Статистика</h3>
+        <div class="stat-list">
+            <div class="stat-item">
+                <span class="stat-item__label">Выполнено тестов</span>
+                <span class="stat-item__value">{{ total_tests }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-item__label">Средний результат</span>
+                <span class="stat-item__value">{{ avg_score }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-card dash-card--wide">
+        <div class="dash-card__header">
+            <h3>Ближайшие занятия</h3>
+            <a href="{{ url_for('dashboard.schedule') }}" class="dash-card__link">Все занятия</a>
+        </div>
+        {% if lessons %}
+            <div class="lesson-list">
+                {% for lesson in lessons %}
+                    <div class="lesson-item">
+                        <div class="lesson-item__date">{{ lesson.date.strftime('%d.%m') }}</div>
+                        <div class="lesson-item__info">
+                            <div class="lesson-item__time">{{ lesson.time }}</div>
+                            <div class="lesson-item__topic">{{ lesson.topic }}</div>
+                        </div>
+                        <span class="badge badge--{{ lesson.format }}">{{ 'Онлайн' if lesson.format == 'online' else 'Офлайн' }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">Нет запланированных занятий</p>
+        {% endif %}
+    </div>
+
+    <div class="dash-card dash-card--wide">
+        <h3>Последние результаты тестов</h3>
+        {% if recent_results %}
+            <div class="result-list">
+                {% for r in recent_results %}
+                    <div class="result-item">
+                        <span class="result-item__topic">{{ r.topic.name }}</span>
+                        <span class="result-item__score">{{ r.score }} / {{ r.total }}</span>
+                        <span class="result-item__pct">{{ (r.score / r.total * 100) | round }}%</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">Тесты пока не пройдены</p>
+        {% endif %}
+    </div>
+
+    {% if weak_topics %}
+        <div class="dash-card dash-card--warn">
+            <h3>Нужно повторить</h3>
+            <ul class="topic-list">
+                {% for t in weak_topics %}
+                    <li>{{ t.name }} (средний результат: {{ t.avg }}%)</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if strong_topics %}
+        <div class="dash-card dash-card--success">
+            <h3>Сильные темы</h3>
+            <ul class="topic-list">
+                {% for t in strong_topics %}
+                    <li>{{ t.name }} ({{ t.avg }}%)</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
