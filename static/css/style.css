@@ -703,6 +703,17 @@ a:hover { color: var(--accent); }
 .text-success { color: var(--success); }
 .text-warning { color: var(--warning); }
 
+/* ===== Адаптация под мобильные ===== */
+
+/* Планшеты и маленькие ноутбуки */
+@media (max-width: 992px) {
+    .container { padding: 0 16px; }
+    .hero__title { font-size: 1.8rem; }
+    .hero__features { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .page-title { font-size: 1.3rem; }
+}
+
 @media (max-width: 768px) {
     .nav {
         display: none;
@@ -717,11 +728,17 @@ a:hover { color: var(--accent); }
     }
     .nav.nav--open { display: flex; }
     .burger { display: flex; }
-    .hero__title { font-size: 1.6rem; }
-    .hero__features { grid-template-columns: 1fr; }
+    .hero {
+        padding: 32px 0 24px;
+    }
+    .hero__title { font-size: 1.4rem; margin-bottom: 12px; }
+    .hero__subtitle { font-size: 1rem; margin-bottom: 24px; }
+    .hero__actions { flex-direction: column; align-items: center; }
+    .hero__actions .btn { width: 100%; max-width: 280px; }
+    .hero__features { grid-template-columns: 1fr; margin-top: 32px; }
     .dashboard-grid { grid-template-columns: 1fr; }
-    .progress-summary { grid-template-columns: 1fr 1fr; }
-    .schedule-card { flex-direction: column; }
+    .progress-summary { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .schedule-card { flex-direction: column; padding: 16px; }
     .schedule-card__date {
         flex-direction: row;
         border-right: none;
@@ -733,12 +750,55 @@ a:hover { color: var(--accent); }
         align-items: center;
     }
     .schedule-card__day { font-size: 1.2rem; }
-    .form-card { padding: 24px 20px; }
+    .form-card { padding: 20px 16px; }
     .topic-card__header { flex-direction: column; }
+    .stat-card { padding: 14px; }
+    .stat-card__value { font-size: 1.4rem; }
+    .dash-card { padding: 16px; }
+    .dash-card h3 { font-size: 0.95rem; }
+    .task-card { padding: 16px; }
+    .task-card__question { font-size: 0.95rem; }
+    .detail-item { padding: 14px; }
+    .test-result__summary { padding: 20px; }
+    .result-score { padding: 14px 24px; }
+    .insight-block { padding: 16px; }
+    .main { padding: 20px 0; }
 }
 
 @media (max-width: 480px) {
+    .container { padding: 0 12px; }
+    .header__inner { height: 52px; }
+    .logo { font-size: 1.1rem; }
+    .hero__title { font-size: 1.2rem; }
+    .hero__subtitle { font-size: 0.9rem; }
+    .hero__features { gap: 12px; }
+    .feature-card { padding: 20px 16px; }
+    .feature-card__icon { font-size: 1.8rem; }
+    .feature-card h3 { font-size: 0.95rem; }
+    .feature-card p { font-size: 0.85rem; }
     .progress-summary { grid-template-columns: 1fr; }
+    .schedule-card__meta { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .form-card { box-shadow: none; padding: 16px 0; }
+    .form-input { font-size: 16px; }
+    .btn { padding: 10px 20px; font-size: 0.9rem; }
+    .page-title { font-size: 1.2rem; }
+    .page-subtitle { font-size: 0.85rem; }
+    .topic-card { padding: 14px; }
+    .topic-card__name { font-size: 0.95rem; }
+    .topic-card__stats { flex-direction: column; gap: 4px; }
+    .stat-card { padding: 12px; }
+    .stat-card__value { font-size: 1.3rem; }
+    .stat-card__label { font-size: 0.8rem; }
+    .dash-card { padding: 14px; }
+    .section-title { font-size: 1.1rem; }
+    .option-label { padding: 8px 12px; font-size: 0.9rem; }
+    .result-score { padding: 12px 20px; }
+    .result-score__value { font-size: 1.6rem; }
+    .schedule-card__topic { font-size: 0.95rem; }
+    .lesson-item { gap: 10px; }
+    .lesson-item__date { min-width: 36px; font-size: 0.95rem; }
+    .alert { padding: 10px 14px; font-size: 0.85rem; }
+    .footer { padding: 16px 0; font-size: 0.8rem; }
 }
 
 /* ===== Чат-бот ИИисторик ===== */
