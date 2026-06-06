@@ -329,26 +329,41 @@ async function submitRegister(e) {
 <div class="chatbot-header"><div class="chatbot-header__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div><div class="chatbot-header__title">Исторический помощник</div><div class="chatbot-header__status">отвечает по учебнику</div></div><button class="chatbot-close" onclick="document.getElementById('chatbotWidgetTilda').classList.remove('chatbot-widget--open');document.getElementById('chatbotOverlayTilda').classList.remove('chatbot-overlay--visible')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
 <div class="chatbot-messages" id="chatbotMessagesTilda"><div class="chatbot-message chatbot-message--bot"><div class="chatbot-message__avatar">И</div><div class="chatbot-message__content"><p>Здравствуйте! Я — ИИисторик, помощник по истории. Задайте мне вопрос по учебнику.</p></div></div></div>
 <div class="chatbot-input-area"><input type="text" class="chatbot-input" id="chatbotInputTilda" placeholder="Задайте вопрос по истории..." autocomplete="off"><button class="chatbot-send" id="chatbotSendTilda"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div></div><script>
-(function(){function e(t){var d=document.createElement('div');d.appendChild(document.createTextNode(t));return d.innerHTML}
-function a(t,u){var d=document.createElement('div');d.className='chatbot-message chatbot-message--'+(u?'user':'bot');
-if(!u){var v=document.createElement('div');v.className='chatbot-message__avatar';v.textContent='И';d.appendChild(v)}
-var c=document.createElement('div');c.className='chatbot-message__content';
-if(u){var p=document.createElement('p');p.textContent=t;c.appendChild(p)}else{c.innerHTML=t}
-d.appendChild(c);m.appendChild(d);m.scrollTop=m.scrollHeight}
-function s(){var d=document.createElement('div');d.className='chatbot-message chatbot-message--bot';d.id='ty';
-var v=document.createElement('div');v.className='chatbot-message__avatar';v.textContent='И';d.appendChild(v);
-var c=document.createElement('div');c.className='chatbot-message__content';c.innerHTML='<div class="chatbot-typing"><span></span><span></span><span></span></div>';
-d.appendChild(c);m.appendChild(d);m.scrollTop=m.scrollHeight}
-function h(){var t=document.getElementById('ty');if(t)t.remove()}
-function f(){var t=i.value.trim();if(!t)return;a(t,true);i.value='';s();
-fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:t})})
-.then(function(r){if(!r.ok)return r.json().then(function(d){throw new Error(d.error||'Ошибка')});return r.json()})
-.then(function(d){h();if(d.error){a('<p class="chatbot-error">'+e(d.error)+'</p>',false);return}
-var x=d.answer||'Нет ответа';var h='<p>'+e(x).replace(/\n/g,'<br>')+'</p>';
-if(d.sources&&d.sources.length>0){h+='<div class="chatbot-sources"><div class="chatbot-sources__title">Источники:</div>';
-d.sources.forEach(function(s){h+='<div class="chatbot-sources__item">'+e(s.fragment)+(s.page?' (стр. '+s.page+')':'')+'</div>'});h+='</div>'}
-a(h,false)})
-.catch(function(e){h();a('<p class="chatbot-error">Ошибка: '+e(e.message||'Ошибка')+'</p>',false)})}
-var i=document.getElementById('chatbotInputTilda'),s=document.getElementById('chatbotSendTilda'),m=document.getElementById('chatbotMessagesTilda');
-if(s&&i){s.addEventListener('click',f);i.addEventListener('keydown',function(e){if(e.key==='Enter')f()})}})();
+(function(){
+  function esc(t){var d=document.createElement('div');d.appendChild(document.createTextNode(t));return d.innerHTML}
+  function addMsg(t,u){
+    var d=document.createElement('div');d.className='chatbot-message chatbot-message--'+(u?'user':'bot');
+    if(!u){var v=document.createElement('div');v.className='chatbot-message__avatar';v.textContent='И';d.appendChild(v)}
+    var c=document.createElement('div');c.className='chatbot-message__content';
+    if(u){var p=document.createElement('p');p.textContent=t;c.appendChild(p)}else{c.innerHTML=t}
+    d.appendChild(c);msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight
+  }
+  function showTyping(){
+    var d=document.createElement('div');d.className='chatbot-message chatbot-message--bot';d.id='ty';
+    var v=document.createElement('div');v.className='chatbot-message__avatar';v.textContent='И';d.appendChild(v);
+    var c=document.createElement('div');c.className='chatbot-message__content';
+    c.innerHTML='<div class="chatbot-typing"><span></span><span></span><span></span></div>';
+    d.appendChild(c);msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight
+  }
+  function hideTyping(){var t=document.getElementById('ty');if(t)t.remove()}
+  function sendMsg(){
+    var text=input.value.trim();if(!text)return;
+    addMsg(text,true);input.value='';showTyping();
+    fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})})
+    .then(function(r){if(!r.ok)return r.json().then(function(d){throw new Error(d.error||'Ошибка сервера')});return r.json()})
+    .then(function(data){
+      hideTyping();
+      if(data.error){addMsg('<p class="chatbot-error">'+esc(data.error)+'</p>',false);return}
+      var answer=data.answer||'Не удалось получить ответ.';
+      var html='<p>'+esc(answer).replace(/\n/g,'<br>')+'</p>';
+      if(data.sources&&data.sources.length>0){
+        html+='<div class="chatbot-sources"><div class="chatbot-sources__title">Источники:</div>';
+        data.sources.forEach(function(s){html+='<div class="chatbot-sources__item">'+esc(s.fragment)+(s.page?' (стр. '+s.page+')':'')+'</div>'});html+='</div>'}
+      addMsg(html,false)
+    })
+    .catch(function(err){hideTyping();addMsg('<p class="chatbot-error">Ошибка: '+esc(err.message||'Ошибка')+'</p>',false)})
+  }
+  var input=document.getElementById('chatbotInputTilda'),btn=document.getElementById('chatbotSendTilda'),msgs=document.getElementById('chatbotMessagesTilda');
+  if(btn&&input){btn.addEventListener('click',sendMsg);input.addEventListener('keydown',function(e){if(e.key==='Enter')sendMsg()})}
+})();
 </script></body> </html>
