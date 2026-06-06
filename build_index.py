@@ -51,14 +51,15 @@ def get_text_from_pdf(path):
                 print(f"  Страница {i + 1} из {total}...")
             text = page.extract_text()
             if text and text.strip():
-                pages.append({'page': i + 1, 'text': text.strip()})
+                text = clean_text(text.strip())
+                pages.append({'page': i + 1, 'text': text})
     return pages
 
 
 def get_text_from_txt(path):
     with open(path, 'r', encoding='utf-8') as f:
         text = f.read()
-    return [{'page': None, 'text': text}]
+    return [{'page': None, 'text': clean_text(text)}]
 
 
 def chunk_text(pages):
@@ -70,7 +71,7 @@ def chunk_text(pages):
 
         current_chunk = ''
         for para in paragraphs:
-            para = para.strip()
+            para = clean_text(para.strip())
             if not para:
                 continue
             if len(current_chunk) + len(para) <= CHUNK_SIZE:
@@ -91,6 +92,10 @@ def cosine_similarity(a, b):
     if na == 0 or nb == 0:
         return 0
     return dot / (na * nb)
+
+
+def clean_text(text):
+    return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
 
 
 def main():
