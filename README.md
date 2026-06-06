@@ -195,6 +195,98 @@ build_index.py          ← скрипт индексации
 .env.example            ← пример файла с ключом
 ```
 
+## Деплой на PythonAnywhere
+
+Бесплатный хостинг для Flask-приложений.
+
+### 1. Регистрация
+
+Зайдите на https://www.pythonanywhere.com и нажмите **Start running Python** → выберите бесплатный план **Beginner**.
+
+### 2. Клонирование репозитория
+
+Откройте **Consoles → Bash** и выполните:
+
+```bash
+git clone https://github.com/timfaz116-code/pro100history.git
+```
+
+### 3. Создание виртуального окружения
+
+```bash
+cd pro100history
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 4. Настройка Web-приложения
+
+На левой панели **Web** → **Add a new web app**:
+- Domain: оставьте `timfaz116-code.pythonanywhere.com`
+- Framework: выберите **Manual configuration**
+- Python version: **3.12**
+
+В разделе **Code**:
+- **Source code**: `/home/timfaz116-code/pro100history`
+- **Working directory**: `/home/timfaz116-code/pro100history`
+
+В разделе **Virtualenv**: `/home/timfaz116-code/pro100history/venv`
+
+### 5. Настройка WSGI-файла
+
+Нажмите на ссылку **WSGI configuration file** — откроется редактор. Замените содержимое на:
+
+```python
+import sys
+import os
+path = '/home/timfaz116-code/pro100history'
+if path not in sys.path:
+    sys.path.append(path)
+os.environ['OPENAI_API_KEY'] = 'ваш_ключ_openrouter'
+os.environ['OPENAI_BASE_URL'] = 'https://openrouter.ai/api/v1'
+os.environ['LLM_MODEL'] = 'deepseek/deepseek-chat'
+os.environ['EMBEDDING_MODEL'] = 'openai/text-embedding-3-small'
+from app import create_app
+application = create_app()
+```
+
+Нажмите **Save**.
+
+### 6. Заполнение базы и индексация
+
+Вернитесь в Bash-консоль:
+
+```bash
+cd pro100history
+source venv/bin/activate
+python seed.py
+```
+
+Если нужен чат-бот — положите учебник в `knowledge/` и запустите:
+
+```bash
+python build_index.py
+```
+
+### 7. Перезагрузка
+
+На странице **Web** нажмите **Reload**.
+
+Сайт будет доступен по адресу: `https://timfaz116-code.pythonanywhere.com`
+
+### 8. Загрузка учебника
+
+Учебник можно загрузить через веб-интерфейс PythonAnywhere:
+- **Files** → `pro100history/knowledge/` → **Upload a file**
+
+Или через консоль (если учебник лежит на GitHub рядом с кодом).
+
+### Важно для бесплатного тарифа
+
+- На бесплатном тарифе сайт «засыпает» при отсутствии запросов. При первом открытии после перерыва придётся подождать 5–10 секунд.
+- ChromaDB может работать медленнее из-за дисковых ограничений. Для реальной работы лучше перейти на платный тариф ($5/мес).
+
 ## Тестовый пользователь
 
 | Email                | Пароль  | Роль    |

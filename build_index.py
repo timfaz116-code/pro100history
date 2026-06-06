@@ -16,13 +16,13 @@
 
 import os
 import glob
-import warnings
+import json
+import math
 import re
+import warnings
 
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 
-import chromadb
-from chromadb.config import Settings
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -30,10 +30,10 @@ load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 KNOWLEDGE_DIR = os.path.join(BASE_DIR, 'knowledge')
-CHROMA_DIR = os.path.join(BASE_DIR, 'storage', 'chroma')
+STORAGE_DIR = os.path.join(BASE_DIR, 'storage')
+INDEX_PATH = os.path.join(STORAGE_DIR, 'index.json')
 
 CHUNK_SIZE = 800
-CHUNK_OVERLAP = 150
 
 
 def get_text_from_pdf(path):
@@ -78,27 +78,16 @@ def chunk_text(pages):
                 current_chunk = para
         if current_chunk:
             chunks.append({'text': current_chunk, 'page': page_num})
-
-    merged = []
-    for chunk in chunks:
-        if merged and merged[-1]['text'].endswith('...'):
-            merged[-1]['text'] += ' ' + chunk['text']
-            continue
-        merged.append(chunk)
-
-    return merged
+    return chunks
 
 
-def get_embedding_model():
-    return os.environ.get('EMBEDDING_MODEL', 'text-embedding-3-small')
-
-
-def embed_text(text, client):
-    response = client.embeddings.create(
-        model=get_embedding_model(),
-        input=text,
-    )
-    return response.data[0].embedding
+def cosine_similarity(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(x * x for x in b))
+    if na == 0 or nb == 0:
+        return 0
+    return dot / (na * nb)
 
 
 def main():
@@ -107,11 +96,11 @@ def main():
         print("ОШИБКА: Не найден OPENAI_API_KEY.")
         print("Создайте файл .env в корне проекта и добавьте:")
         print("  OPENAI_API_KEY=ваш_ключ")
-        print("\nПолучить ключ: https://platform.openai.com/api-keys")
         print()
-        print("Если OpenAI недоступен в вашем регионе, используйте OpenRouter или DeepSeek:")
-        print("  OPENAI_BASE_URL=https://openrouter.ai/api/v1")
+        print("Для OpenRouter:")
         print("  OPENAI_API_KEY=sk-or-...")
+        print("  OPENAI_BASE_URL=https://openrouter.ai/api/v1")
+        print("  EMBEDDING_MODEL=openai/text-embedding-3-small")
         return
 
     pdf_files = glob.glob(os.path.join(KNOWLEDGE_DIR, '*.pdf'))
@@ -149,65 +138,45 @@ def main():
     chunks = chunk_text(pages)
     print(f"Получено {len(chunks)} фрагментов.")
 
-    print("Подключение к ChromaDB...")
-    db = chromadb.PersistentClient(
-        path=CHROMA_DIR,
-        settings=Settings(anonymized_telemetry=False),
-    )
-
-    try:
-        db.delete_collection('history_textbook')
-    except Exception:
-        pass
-
-    collection = db.create_collection(name='history_textbook')
-
-    print("Создание эмбеддингов и загрузка в индекс...")
+    print("Создание эмбеддингов...")
     base_url = os.environ.get('OPENAI_BASE_URL', None)
+    embedding_model = os.environ.get('EMBEDDING_MODEL', 'text-embedding-3-small')
+
     client_kwargs = {'api_key': api_key}
     if base_url:
         client_kwargs['base_url'] = base_url
     client = OpenAI(**client_kwargs)
 
-    ids = []
-    texts = []
-    metadatas = []
-    embeddings = []
-
-    for i, chunk in enumerate(chunks):
-        ids.append(f'chunk_{i}')
-        texts.append(chunk['text'])
-        metadatas.append({
-            'page': str(chunk['page']) if chunk['page'] else '',
-            'chunk_id': i,
-        })
+    index_data = {
+        'chunks': [],
+        'embeddings': [],
+    }
 
     BATCH_SIZE = 20
-    for start in range(0, len(texts), BATCH_SIZE):
-        end = min(start + BATCH_SIZE, len(texts))
-        batch_texts = texts[start:end]
-        batch_ids = ids[start:end]
-        batch_metas = metadatas[start:end]
+    for start in range(0, len(chunks), BATCH_SIZE):
+        end = min(start + BATCH_SIZE, len(chunks))
+        batch = chunks[start:end]
+        batch_texts = [c['text'] for c in batch]
 
-        print(f"  Обработка фрагментов {start + 1}–{end} из {len(texts)}...")
+        print(f"  Фрагменты {start + 1}–{end} из {len(chunks)}...")
         response = client.embeddings.create(
-            model='text-embedding-3-small',
+            model=embedding_model,
             input=batch_texts,
         )
-        batch_embeddings = [r.embedding for r in response.data]
 
-        collection.add(
-            ids=batch_ids,
-            documents=batch_texts,
-            metadatas=batch_metas,
-            embeddings=batch_embeddings,
-        )
+        for i, chunk in enumerate(batch):
+            index_data['chunks'].append(chunk)
+            index_data['embeddings'].append(response.data[i].embedding)
+
+    os.makedirs(STORAGE_DIR, exist_ok=True)
+    with open(INDEX_PATH, 'w', encoding='utf-8') as f:
+        json.dump(index_data, f, ensure_ascii=False)
 
     print()
     print("Готово! Индекс создан.")
     print(f"  Файл: {os.path.basename(source_path)}")
     print(f"  Фрагментов: {len(chunks)}")
-    print(f"  Хранилище: {CHROMA_DIR}")
+    print(f"  Индекс: {INDEX_PATH}")
     print()
     print("Теперь можно запустить сайт и задавать вопросы чат-боту.")
 

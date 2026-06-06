@@ -1,15 +1,18 @@
 import os
+import json
+import math
 import warnings
 
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 
-import chromadb
-from chromadb.config import Settings
 from openai import OpenAI
 from app.chatbot.prompts import SYSTEM_PROMPT, RELEVANCE_CHECK_PROMPT
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CHROMA_DIR = os.path.join(BASE_DIR, 'storage', 'chroma')
+INDEX_PATH = os.path.join(BASE_DIR, 'storage', 'index.json')
+
+_index_cache = None
+
 
 def get_llm_client():
     api_key = os.environ.get('OPENAI_API_KEY', '')
@@ -28,12 +31,24 @@ def get_llm_model():
     return os.environ.get('LLM_MODEL', 'gpt-4o-mini')
 
 
-def get_chroma_collection():
-    db = chromadb.PersistentClient(
-        path=CHROMA_DIR,
-        settings=Settings(anonymized_telemetry=False),
-    )
-    return db.get_or_create_collection(name='history_textbook')
+def load_index():
+    global _index_cache
+    if _index_cache is not None:
+        return _index_cache
+    if not os.path.exists(INDEX_PATH):
+        return None
+    with open(INDEX_PATH, 'r', encoding='utf-8') as f:
+        _index_cache = json.load(f)
+    return _index_cache
+
+
+def cosine_similarity(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(x * x for x in b))
+    if na == 0 or nb == 0:
+        return 0
+    return dot / (na * nb)
 
 
 def embed_text(text):
@@ -46,14 +61,28 @@ def embed_text(text):
 
 
 def search_chunks(query, top_k=5):
-    collection = get_chroma_collection()
-    query_embedding = embed_text(query)
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=top_k,
-        include=['documents', 'metadatas', 'distances'],
-    )
-    return results
+    index = load_index()
+    if index is None or not index['chunks']:
+        return [], [], []
+
+    query_emb = embed_text(query)
+    similarities = []
+    for i, stored_emb in enumerate(index['embeddings']):
+        sim = cosine_similarity(query_emb, stored_emb)
+        similarities.append((sim, i))
+
+    similarities.sort(key=lambda x: x[0], reverse=True)
+    top = similarities[:top_k]
+
+    documents = []
+    metadatas = []
+    distances = []
+    for sim, idx in top:
+        documents.append(index['chunks'][idx]['text'])
+        metadatas.append({'page': str(index['chunks'][idx]['page']) if index['chunks'][idx]['page'] else ''})
+        distances.append(1 - sim)
+
+    return documents, metadatas, distances
 
 
 def relevance_check(query, chunks):
@@ -81,11 +110,7 @@ def relevance_check(query, chunks):
 
 
 def get_answer(question):
-    search_results = search_chunks(question, top_k=5)
-
-    documents = search_results.get('documents', [[]])[0]
-    metadatas = search_results.get('metadatas', [[]])[0]
-    distances = search_results.get('distances', [[]])[0]
+    documents, metadatas, distances = search_chunks(question, top_k=5)
 
     if not documents:
         return {
