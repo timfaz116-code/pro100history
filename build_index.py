@@ -45,7 +45,10 @@ def get_text_from_pdf(path):
 
     pages = []
     with pdfplumber.open(path) as pdf:
+        total = len(pdf.pages)
         for i, page in enumerate(pdf.pages):
+            if (i + 1) % 50 == 0 or i == 0 or i == total - 1:
+                print(f"  Страница {i + 1} из {total}...")
             text = page.extract_text()
             if text and text.strip():
                 pages.append({'page': i + 1, 'text': text.strip()})
