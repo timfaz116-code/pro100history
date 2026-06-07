@@ -21,6 +21,8 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+    word-break: break-word;
+    overflow-wrap: anywhere;
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
@@ -326,10 +328,10 @@ a:hover { color: var(--accent); }
 }
 
 .stat-list { display: flex; flex-direction: column; gap: 12px; }
-.stat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.stat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 8px; }
 .stat-item:last-child { border-bottom: none; }
 .stat-item__label { font-size: 0.9rem; color: var(--text-muted); }
-.stat-item__value { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+.stat-item__value { font-size: 1.1rem; font-weight: 700; color: var(--primary); white-space: nowrap; }
 
 .lesson-item {
     display: flex;
@@ -374,11 +376,12 @@ a:hover { color: var(--accent); }
     padding: 8px 0;
     border-bottom: 1px solid var(--border);
     font-size: 0.9rem;
+    gap: 8px;
 }
 .result-item:last-child { border-bottom: none; }
-.result-item__topic { flex: 1; }
-.result-item__score { font-weight: 600; margin: 0 16px; }
-.result-item__pct { font-weight: 700; color: var(--primary); }
+.result-item__topic { flex: 1; min-width: 0; }
+.result-item__score { font-weight: 600; white-space: nowrap; }
+.result-item__pct { font-weight: 700; color: var(--primary); white-space: nowrap; }
 
 .topic-list { list-style: none; }
 .topic-list li {
@@ -712,6 +715,8 @@ a:hover { color: var(--accent); }
     .hero__features { grid-template-columns: repeat(2, 1fr); }
     .dashboard-grid { grid-template-columns: 1fr; }
     .page-title { font-size: 1.3rem; }
+    .nav { gap: 4px; }
+    .nav__link { padding: 6px 10px; font-size: 0.82rem; }
 }
 
 @media (max-width: 768px) {
@@ -799,6 +804,18 @@ a:hover { color: var(--accent); }
     .lesson-item__date { min-width: 36px; font-size: 0.95rem; }
     .alert { padding: 10px 14px; font-size: 0.85rem; }
     .footer { padding: 16px 0; font-size: 0.8rem; }
+    .schedule__grid { gap: 10px; }
+    .dash-card h3 { font-size: 0.9rem; }
+    .stat-item__value { font-size: 0.95rem; }
+    .result-item { font-size: 0.82rem; gap: 6px; }
+    .result-item__score { margin: 0 8px; }
+    .badge { font-size: 0.65rem; padding: 2px 8px; white-space: nowrap; }
+    .topic-card__stats { gap: 2px; }
+    .topic-card__desc { font-size: 0.85rem; }
+    .detail-item { padding: 12px; }
+    .detail-item h4 { font-size: 0.9rem; }
+    .detail-item p { font-size: 0.85rem; }
+    .nav__link { padding: 10px 16px; font-size: 1rem; }
 }
 
 /* ===== Чат-бот ИИисторик ===== */
