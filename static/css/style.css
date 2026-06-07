@@ -733,6 +733,7 @@ a:hover { color: var(--accent); }
         padding: 16px 20px;
         box-shadow: 0 8px 16px rgba(0,0,0,0.15);
     }
+    body { overflow-x: hidden; }
     .nav.nav--open { display: flex; }
     .burger { display: flex; }
     .hero {
