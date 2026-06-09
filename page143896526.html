@@ -39,8 +39,7 @@ img{max-width:100%;height:auto}
 .chatbot-input-area{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #e0d0b8;background:#fff;flex-shrink:0}
 .chatbot-input{flex:1;padding:10px 14px;border:2px solid #e0d0b8;border-radius:24px;font-size:0.9rem;outline:none;font-family:Arial,sans-serif}
 .chatbot-input:focus{border-color:#b1443d}
-.chatbot-source-link{color:#b1443d;text-decoration:underline;font-weight:600}
-.chatbot-source-link:hover{color:#8a332d}
+
 .chatbot-send{width:40px;height:40px;border-radius:50%;background:#ffa45a;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .chatbot-send:hover{background:#f58a3a}
 @media(max-width:480px){
@@ -368,7 +367,7 @@ async function submitRegister(e) {
       var html='<p>'+esc(answer).replace(/\n/g,'<br>')+'</p>';
       if(data.sources&&data.sources.length>0){
         html+='<div class="chatbot-sources"><div class="chatbot-sources__title">Источники:</div>';
-        data.sources.forEach(function(s){html+='<div class="chatbot-sources__item">'+esc(s.fragment)+(s.page?' <a href="'+esc(s.page_url)+'" target="_blank" rel="noopener" class="chatbot-source-link">(стр. '+esc(s.page)+')</a>':'')+'</div>'});html+='</div>'}
+        data.sources.forEach(function(s){html+='<div class="chatbot-sources__item">'+esc(s.fragment)+(s.page?' (стр. '+s.page+')':'')+'</div>'});html+='</div>'}
       addMsg(html,false)
     })
     .catch(function(err){hideTyping();addMsg('<p class="chatbot-error">Ошибка: '+esc(err.message||'Ошибка')+'</p>',false)})
