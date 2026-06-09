@@ -155,7 +155,7 @@ def get_answer(question, history=None):
         sources.append({
             'fragment': doc[:200] + ('...' if len(doc) > 200 else ''),
             'page': page if page else None,
-            'page_url': f'{base_pdf_url}#page={page}' if page and page.isdigit() else None,
+            'page_url': f'{base_pdf_url}#page={int(page) - 1}' if page and page.isdigit() else None,
         })
 
     return {'answer': answer, 'sources': sources}
