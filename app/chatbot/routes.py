@@ -5,6 +5,12 @@ from app.models import ChatMessage
 chatbot_bp = Blueprint('chatbot', __name__)
 
 
+def ensure_table():
+    from sqlalchemy import inspect
+    if not inspect(db.engine).has_table('chat_messages'):
+        db.create_all()
+
+
 @chatbot_bp.route('/api/chat', methods=['POST'])
 def chat():
     data = request.get_json(silent=True)
@@ -16,6 +22,8 @@ def chat():
         return jsonify({'error': 'Сообщение не может быть пустым'}), 400
 
     conversation_id = data.get('conversation_id', 'default')
+
+    ensure_table()
 
     history = ChatMessage.query.filter_by(conversation_id=conversation_id)\
         .order_by(ChatMessage.created_at.asc()).all()
@@ -44,6 +52,7 @@ def chat():
 @chatbot_bp.route('/api/chat/history', methods=['GET'])
 def get_history():
     conversation_id = request.args.get('conversation_id', 'default')
+    ensure_table()
     messages = ChatMessage.query.filter_by(conversation_id=conversation_id)\
         .order_by(ChatMessage.created_at.asc()).all()
     return jsonify([{
