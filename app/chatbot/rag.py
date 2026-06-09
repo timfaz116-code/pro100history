@@ -149,11 +149,13 @@ def get_answer(question, history=None):
     answer = response.choices[0].message.content
 
     sources = []
+    base_pdf_url = 'https://raw.githubusercontent.com/timfaz116-code/pro100history/main/knowledge/history_textbook.pdf'
     for i, doc in enumerate(documents):
         page = metadatas[i].get('page', '') if metadatas and i < len(metadatas) else ''
         sources.append({
             'fragment': doc[:200] + ('...' if len(doc) > 200 else ''),
             'page': page if page else None,
+            'page_url': f'{base_pdf_url}#page={page}' if page and page.isdigit() else None,
         })
 
     return {'answer': answer, 'sources': sources}
