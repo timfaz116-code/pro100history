@@ -118,26 +118,7 @@ def relevance_check(query, chunks):
 def get_answer(question, history=None):
     documents, metadatas, distances = search_chunks(question, top_k=5)
 
-    if not documents:
-        return {
-            'answer': 'В загруженном учебнике нет достаточной информации для ответа на этот вопрос.',
-            'sources': [],
-        }
-
-    has_relevant = relevance_check(question, documents)
-    if not has_relevant:
-        return {
-            'answer': 'В загруженном учебнике нет достаточной информации для ответа на этот вопрос.',
-            'sources': [],
-        }
-
-    context_parts = []
-    for i, doc in enumerate(documents):
-        page = metadatas[i].get('page', '') if metadatas and i < len(metadatas) else ''
-        page_str = f' (стр. {page})' if page else ''
-        context_parts.append(f'Фрагмент {i + 1}{page_str}:\n{doc}')
-
-    context = '\n\n'.join(context_parts)
+    has_relevant = bool(documents) and relevance_check(question, documents)
 
     messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
 
@@ -146,7 +127,17 @@ def get_answer(question, history=None):
             role = 'user' if entry.get('role') == 'user' else 'assistant'
             messages.append({'role': role, 'content': entry.get('content', '')})
 
-    messages.append({'role': 'user', 'content': f'Контекст из учебника:\n\n{context}\n\nВопрос ученика: {question}'})
+    if has_relevant:
+        context_parts = []
+        for i, doc in enumerate(documents):
+            page = metadatas[i].get('page', '') if metadatas and i < len(metadatas) else ''
+            page_str = f' (стр. {page})' if page else ''
+            context_parts.append(f'Фрагмент {i + 1}{page_str}:\n{doc}')
+
+        context = '\n\n'.join(context_parts)
+        messages.append({'role': 'user', 'content': f'Контекст из учебника:\n\n{context}\n\nВопрос ученика: {question}'})
+    else:
+        messages.append({'role': 'user', 'content': f'Вопрос ученика: {question}'})
 
     llm = get_llm_client()
     response = llm.chat.completions.create(
