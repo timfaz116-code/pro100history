@@ -30,4 +30,8 @@ def create_app():
     app.register_blueprint(learning_bp, url_prefix='/learning')
     app.register_blueprint(chatbot_bp)
 
+    with app.app_context():
+        import app.models
+        db.create_all()
+
     return app

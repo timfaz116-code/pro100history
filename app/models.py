@@ -87,3 +87,13 @@ class UserTopicProgress(db.Model):
     topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=False)
     progress_percent = db.Column(db.Float, default=0.0)
     status = db.Column(db.String(20), default='not_started')
+
+
+class ChatMessage(db.Model):
+    __tablename__ = 'chat_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.String(64), nullable=False, index=True)
+    role = db.Column(db.String(16), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

@@ -336,6 +336,8 @@ async function submitRegister(e) {
 <div class="chatbot-messages" id="chatbotMessagesTilda"><div class="chatbot-message chatbot-message--bot"><div class="chatbot-message__avatar">И</div><div class="chatbot-message__content"><p>Здравствуйте! Я — ИИисторик, помощник по истории. Задайте мне вопрос по учебнику истории для 11 класса, авторы: В.Р.Мединский, А.В Торкунов.</p></div></div></div>
 <div class="chatbot-input-area"><input type="text" class="chatbot-input" id="chatbotInputTilda" placeholder="Задайте вопрос по истории..." autocomplete="off"><button class="chatbot-send" id="chatbotSendTilda"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div></div><script>
 (function(){
+  var cid = localStorage.getItem('chatbot_cid');
+  if(!cid){cid = 'cid_' + Date.now() + '_' + Math.random().toString(36).slice(2,10);localStorage.setItem('chatbot_cid',cid)}
   function esc(t){var d=document.createElement('div');d.appendChild(document.createTextNode(t));return d.innerHTML}
   function addMsg(t,u){
     var d=document.createElement('div');d.className='chatbot-message chatbot-message--'+(u?'user':'bot');
@@ -355,7 +357,7 @@ async function submitRegister(e) {
   function sendMsg(){
     var text=input.value.trim();if(!text)return;
     addMsg(text,true);input.value='';showTyping();
-    fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})})
+    fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text, conversation_id:cid})})
     .then(function(r){if(!r.ok)return r.json().then(function(d){throw new Error(d.error||'Ошибка сервера')});return r.json()})
     .then(function(data){
       hideTyping();
@@ -369,7 +371,20 @@ async function submitRegister(e) {
     })
     .catch(function(err){hideTyping();addMsg('<p class="chatbot-error">Ошибка: '+esc(err.message||'Ошибка')+'</p>',false)})
   }
+  function restoreHistory(){
+    fetch('/api/chat/history?conversation_id='+encodeURIComponent(cid))
+    .then(function(r){return r.json()})
+    .then(function(messages){
+      for(var i=0;i<messages.length;i++){
+        var m=messages[i];
+        var html=(m.role==='assistant')?'<p>'+esc(m.content).replace(/\n/g,'<br>')+'</p>':m.content;
+        addMsg(html,m.role==='user');
+      }
+    })
+    .catch(function(){})
+  }
   var input=document.getElementById('chatbotInputTilda'),btn=document.getElementById('chatbotSendTilda'),msgs=document.getElementById('chatbotMessagesTilda');
+  restoreHistory();
   if(btn&&input){btn.addEventListener('click',sendMsg);input.addEventListener('keydown',function(e){if(e.key==='Enter')sendMsg()})}
 })();
 </script></body> </html>

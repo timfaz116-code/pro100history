@@ -115,7 +115,7 @@ def relevance_check(query, chunks):
         return True
 
 
-def get_answer(question):
+def get_answer(question, history=None):
     documents, metadatas, distances = search_chunks(question, top_k=5)
 
     if not documents:
@@ -139,13 +139,19 @@ def get_answer(question):
 
     context = '\n\n'.join(context_parts)
 
+    messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
+
+    if history:
+        for entry in history:
+            role = 'user' if entry.get('role') == 'user' else 'assistant'
+            messages.append({'role': role, 'content': entry.get('content', '')})
+
+    messages.append({'role': 'user', 'content': f'Контекст из учебника:\n\n{context}\n\nВопрос ученика: {question}'})
+
     llm = get_llm_client()
     response = llm.chat.completions.create(
         model=get_llm_model(),
-        messages=[
-            {'role': 'system', 'content': SYSTEM_PROMPT},
-            {'role': 'user', 'content': f'Контекст из учебника:\n\n{context}\n\nВопрос ученика: {question}'},
-        ],
+        messages=messages,
         temperature=0.3,
         max_tokens=1000,
     )
