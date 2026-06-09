@@ -149,7 +149,7 @@ def get_answer(question, history=None):
     answer = response.choices[0].message.content
 
     sources = []
-    base_pdf_url = 'https://github.com/timfaz116-code/pro100history/blob/main/knowledge/history_textbook.pdf'
+    base_pdf_url = 'https://raw.githubusercontent.com/timfaz116-code/pro100history/main/knowledge/history_textbook.pdf'
     for i, doc in enumerate(documents):
         page = metadatas[i].get('page', '') if metadatas and i < len(metadatas) else ''
         sources.append({
