@@ -123,7 +123,8 @@ def get_answer(question, history=None):
     messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
 
     if history:
-        for entry in history:
+        limited = history[-8:]
+        for entry in limited:
             role = 'user' if entry.get('role') == 'user' else 'assistant'
             messages.append({'role': role, 'content': entry.get('content', '')})
 
