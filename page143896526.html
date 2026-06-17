@@ -390,6 +390,49 @@ async function submitRegister(e) {
   var input=document.getElementById('chatbotInputTilda'),btn=document.getElementById('chatbotSendTilda'),msgs=document.getElementById('chatbotMessagesTilda');
   restoreHistory();
   if(btn&&input){btn.addEventListener('click',sendMsg);input.addEventListener('keydown',function(e){if(e.key==='Enter')sendMsg()})}
+  if(window.innerWidth<768){
+    setTimeout(function(){
+      var rec=document.getElementById('rec2305570311');
+      if(!rec)return;
+      var sl=document.querySelector('#rec2306225451 .t396__artboard');
+      if(!sl)return;
+      var items=[];
+      sl.querySelectorAll('.tn-elem[data-elem-type="text"] .tn-atom').forEach(function(el){
+        var t=el.textContent.trim();
+        if(!t||t.length<3)return;
+        items.push(t);
+      });
+      if(items.length<3)return;
+      var div=document.createElement('div');
+      div.style.cssText='padding:20px 16px;background:#f2ddc4';
+      var h=document.createElement('h2');
+      h.style.cssText='font-size:22px;font-weight:700;text-align:center;margin:0 0 16px;color:#333;padding-top:10px';
+      h.textContent='ПРОГРАММА КУРСА';
+      div.appendChild(h);
+      var months=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+      items.forEach(function(t){
+        var isMonth=months.some(function(m){return t.toLowerCase().indexOf(m)>=0});
+        if(isMonth){
+          var m=document.createElement('div');
+          m.style.cssText='font-weight:700;font-size:18px;color:#b1443d;margin:16px 0 8px;padding-top:8px;border-top:2px solid #e8cfb8';
+          m.textContent=t.charAt(0).toUpperCase()+t.slice(1);
+          div.appendChild(m);
+        }else{
+          var p=document.createElement('div');
+          var match=t.match(/^\d+\s*неделя/i);
+          if(match){
+            p.style.cssText='padding:10px 14px;margin:6px 0;background:#fff;border-radius:12px;color:#333;border-left:4px solid #b1443d';
+          }else{
+            p.style.cssText='padding:8px 14px;margin:6px 0;background:#fff;border-radius:12px;color:#333';
+          }
+          p.innerHTML=t.replace(/\n/g,'<br>');
+          div.appendChild(p);
+        }
+      });
+      rec.parentNode.insertBefore(div,rec);
+      rec.style.display='none';
+    },3000);
+  }
 })();
 </script>
 <style id="responsive-fixes">
