@@ -392,17 +392,11 @@ async function submitRegister(e) {
 })();
 </script>
 <style id="responsive-fixes">
-@media(max-width:768px){
-.t396__artboard{overflow:hidden!important}
+html,body{overflow-x:hidden!important;width:100%!important}
 .t396__carrier{background-size:cover!important}
-.tn-elem img,.tn-atom img{max-width:100%!important;height:auto!important}
 .modal{max-width:92vw!important;padding:20px 14px!important;margin:0 8px!important}
 .modal input{font-size:16px!important}
 .cab-btn,.auth-btn,.reg-btn{width:100%!important;margin:4px 0!important;font-size:14px!important;padding:10px!important}
-}
-@media(max-width:480px){
-[data-elem-id="1584641327232"]{display:none!important}
-}
 @media(max-width:640px){
 .chatbot-widget{width:calc(100vw - 24px)!important;right:12px!important;bottom:76px!important;height:65vh!important}
 .chatbot-message{max-width:92%!important}
@@ -418,26 +412,41 @@ async function submitRegister(e) {
 }
 </style>
 <script>
-function fixTildaResponsive(){
-if(window.innerWidth<768){
-document.querySelectorAll('.t396__artboard').forEach(function(b){
-b.style.height='auto';
-b.style.minHeight='150px';
+function fixOverlapping(){
+if(window.innerWidth>767)return;
+document.querySelectorAll('.t396').forEach(function(section){
+var artboard=section.querySelector('.t396__artboard');
+if(!artboard)return;
+artboard.style.position='relative';
+artboard.style.height='auto';
+artboard.style.minHeight='50px';
+artboard.style.display='flex';
+artboard.style.flexDirection='column';
+artboard.style.alignItems='flex-start';
+artboard.style.padding='10px';
+var elems=section.querySelectorAll('.tn-elem');
+elems.forEach(function(e){
+e.style.position='relative';
+e.style.top='auto';
+e.style.left='auto';
+e.style.width='auto';
+e.style.maxWidth='100%';
+e.style.height='auto';
+e.style.marginBottom='8px';
+e.style.transform='none';
+e.style.zoom='1';
+var img=e.querySelector('img');
+if(img){img.style.maxWidth='100%';img.style.height='auto'}
+});
 });
 }
-}
-if(document.querySelector('.t-records')){
-if(window.t_onReady){
-t_onReady(fixTildaResponsive);
+function waitAndFix(){
+if(document.readyState==='complete'){
+setTimeout(fixOverlapping,1000);
 }else{
-window.addEventListener('load',function(){
-setTimeout(fixTildaResponsive,800);
-});
+window.addEventListener('load',function(){setTimeout(fixOverlapping,1200);});
 }
-}else{
-window.addEventListener('load',function(){
-setTimeout(fixTildaResponsive,800);
-});
 }
+waitAndFix();
 </script>
 </body> </html>
