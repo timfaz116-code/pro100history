@@ -15,6 +15,12 @@ EMBEDDING_DIM = 1536
 
 
 def get_llm_client():
+    model = get_llm_model()
+    if 'gemini' in model.lower():
+        return OpenAI(
+            api_key=os.environ.get('GEMINI_API_KEY', ''),
+            base_url='https://generativelanguage.googleapis.com/v1beta/openai/'
+        )
     api_key = os.environ.get('OPENAI_API_KEY', '')
     base_url = os.environ.get('OPENAI_BASE_URL', None)
     kwargs = {'api_key': api_key}
