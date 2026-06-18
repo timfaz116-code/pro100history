@@ -24,7 +24,13 @@ def get_openai_client():
 
 def get_llm_client():
     model = get_llm_model()
-    if 'gemini' in model.lower():
+    ml = model.lower()
+    if ml.startswith('gigachat'):
+        return OpenAI(
+            api_key=os.environ.get('GIGACHAT_API_KEY', ''),
+            base_url='https://gigachat.devices.sberbank.ru/api/v1/'
+        )
+    if 'gemini' in ml:
         return OpenAI(
             api_key=os.environ.get('GEMINI_API_KEY', ''),
             base_url='https://generativelanguage.googleapis.com/v1beta/openai/'
@@ -67,8 +73,19 @@ def cosine_similarity(a, b):
 
 
 def embed_text(text):
-    llm = get_openai_client()
-    response = llm.embeddings.create(
+    model = get_llm_model()
+    if model.lower().startswith('gigachat'):
+        client = OpenAI(
+            api_key=os.environ.get('GIGACHAT_API_KEY', ''),
+            base_url='https://gigachat.devices.sberbank.ru/api/v1/'
+        )
+        response = client.embeddings.create(
+            model='Embeddings',
+            input=text,
+        )
+        return response.data[0].embedding
+    client = get_openai_client()
+    response = client.embeddings.create(
         model=get_embedding_model(),
         input=text,
     )
