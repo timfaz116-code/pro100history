@@ -14,13 +14,22 @@ DB_PATH = os.path.join(BASE_DIR, 'storage', 'index.db')
 EMBEDDING_DIM = 1536
 
 
-def get_llm_client():
+def get_openai_client():
     api_key = os.environ.get('OPENAI_API_KEY', '')
     base_url = os.environ.get('OPENAI_BASE_URL', None)
     kwargs = {'api_key': api_key}
     if base_url:
         kwargs['base_url'] = base_url
     return OpenAI(**kwargs)
+
+def get_llm_client():
+    model = get_llm_model()
+    if 'gemini' in model.lower():
+        return OpenAI(
+            api_key=os.environ.get('GEMINI_API_KEY', ''),
+            base_url='https://generativelanguage.googleapis.com/v1beta/openai/'
+        )
+    return get_openai_client()
 
 
 def get_embedding_model():
@@ -58,7 +67,7 @@ def cosine_similarity(a, b):
 
 
 def embed_text(text):
-    llm = get_llm_client()
+    llm = get_openai_client()
     response = llm.embeddings.create(
         model=get_embedding_model(),
         input=text,
