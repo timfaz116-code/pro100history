@@ -141,13 +141,28 @@ def get_answer(question, history=None):
         messages.append({'role': 'user', 'content': f'Вопрос ученика: {question}'})
 
     llm = get_llm_client()
-    response = llm.chat.completions.create(
-        model=get_llm_model(),
-        messages=messages,
-        temperature=0.3,
-        max_tokens=1000,
-    )
-    answer = response.choices[0].message.content
+    try:
+        response = llm.chat.completions.create(
+            model=get_llm_model(),
+            messages=messages,
+            temperature=0.3,
+            max_tokens=500,
+        )
+        answer = response.choices[0].message.content
+    except Exception as e:
+        if '402' in str(e) or 'Insufficient credits' in str(e):
+            try:
+                response = llm.chat.completions.create(
+                    model=get_llm_model(),
+                    messages=messages,
+                    temperature=0.3,
+                    max_tokens=150,
+                )
+                answer = response.choices[0].message.content
+            except Exception:
+                raise Exception('Недостаточно кредитов OpenRouter. Пополните баланс: https://openrouter.ai/settings/credits')
+        else:
+            raise e
 
     sources = []
     base_pdf_url = 'https://raw.githubusercontent.com/timfaz116-code/pro100history/main/knowledge/history_textbook.pdf'
