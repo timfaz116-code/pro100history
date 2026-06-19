@@ -178,13 +178,12 @@ def get_answer(question, history=None):
             raise Exception(f'OpenRouter error: {err_str[:500]}')
 
     sources = []
-    base_pdf_url = 'https://cdn.jsdelivr.net/gh/timfaz116-code/pro100history/knowledge/history_textbook.pdf'
     for i, doc in enumerate(documents):
         page = metadatas[i].get('page', '') if metadatas and i < len(metadatas) else ''
         sources.append({
             'fragment': doc[:200] + ('...' if len(doc) > 200 else ''),
             'page': page if page else None,
-            'page_url': f'{base_pdf_url}#page={page}' if page and page.isdigit() else None,
+            'page_url': f'/api/pdf/viewer?page={page}' if page and page.isdigit() else None,
         })
 
     return {'answer': answer, 'sources': sources}

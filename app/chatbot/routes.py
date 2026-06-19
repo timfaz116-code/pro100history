@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template_string
 from app.extensions import db
 from app.models import ChatMessage
 
@@ -59,3 +59,15 @@ def get_history():
         'role': m.role,
         'content': m.content,
     } for m in messages])
+
+
+PDF_VIEWER_TEMPLATE = '''<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Учебник</title>
+<style>body{margin:0;height:100vh}embed{width:100%;height:100%}</style>
+</head><body><embed src="https://raw.githubusercontent.com/timfaz116-code/pro100history/main/knowledge/history_textbook.pdf#page={{ page }}" type="application/pdf"></body></html>'''
+
+
+@chatbot_bp.route('/api/pdf/viewer')
+def pdf_viewer():
+    page = request.args.get('page', '1')
+    return render_template_string(PDF_VIEWER_TEMPLATE, page=page)
