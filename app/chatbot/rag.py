@@ -22,14 +22,10 @@ def get_openai_client():
         kwargs['base_url'] = base_url
     return OpenAI(**kwargs)
 
+
 def get_llm_client():
     model = get_llm_model()
     ml = model.lower()
-    if ml.startswith('gigachat'):
-        return OpenAI(
-            api_key=os.environ.get('GIGACHAT_API_KEY', ''),
-            base_url='https://gigachat.devices.sberbank.ru/api/v1/'
-        )
     if 'gemini' in ml:
         return OpenAI(
             api_key=os.environ.get('GEMINI_API_KEY', ''),
@@ -73,17 +69,6 @@ def cosine_similarity(a, b):
 
 
 def embed_text(text):
-    model = get_llm_model()
-    if model.lower().startswith('gigachat'):
-        client = OpenAI(
-            api_key=os.environ.get('GIGACHAT_API_KEY', ''),
-            base_url='https://gigachat.devices.sberbank.ru/api/v1/'
-        )
-        response = client.embeddings.create(
-            model='Embeddings',
-            input=text,
-        )
-        return response.data[0].embedding
     client = get_openai_client()
     response = client.embeddings.create(
         model=get_embedding_model(),
@@ -176,7 +161,8 @@ def get_answer(question, history=None):
         )
         answer = response.choices[0].message.content
     except Exception as e:
-        if '402' in str(e) or 'Insufficient credits' in str(e):
+        err_str = str(e)
+        if '402' in err_str or 'Insufficient credits' in err_str:
             try:
                 response = llm.chat.completions.create(
                     model=get_llm_model(),
@@ -185,10 +171,10 @@ def get_answer(question, history=None):
                     max_tokens=150,
                 )
                 answer = response.choices[0].message.content
-            except Exception:
-                raise Exception('Недостаточно кредитов OpenRouter. Пополните баланс: https://openrouter.ai/settings/credits')
+            except Exception as e2:
+                raise Exception(f'OpenRouter error: {err_str[:300]}. Fallback also failed: {str(e2)[:200]}')
         else:
-            raise e
+            raise Exception(f'OpenRouter error: {err_str[:500]}')
 
     sources = []
     base_pdf_url = 'https://raw.githubusercontent.com/timfaz116-code/pro100history/main/knowledge/history_textbook.pdf'
