@@ -7,7 +7,7 @@ import warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 from openai import OpenAI
-from app.chatbot.prompts import SYSTEM_PROMPT, RELEVANCE_CHECK_PROMPT
+from app.chatbot.prompts import SYSTEM_PROMPT
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB_PATH = os.path.join(BASE_DIR, 'storage', 'index.db')
@@ -102,34 +102,8 @@ def search_chunks(query, top_k=5):
     return documents, metadatas, distances
 
 
-def relevance_check(query, chunks):
-    if not chunks or not any(c.strip() for c in chunks):
-        return False
-    combined = '\n\n'.join(chunks[:3])
-    prompt = f"""Фрагменты учебника:
-{combined}
-
-Вопрос ученика: {query}
-
-{RELEVANCE_CHECK_PROMPT}"""
-    try:
-        llm = get_llm_client()
-        response = llm.chat.completions.create(
-            model=get_llm_model(),
-            messages=[{'role': 'user', 'content': prompt}],
-            temperature=0,
-            max_tokens=10,
-        )
-        answer = response.choices[0].message.content.strip().lower()
-        return 'да' in answer
-    except Exception:
-        return True
-
-
 def get_answer(question, history=None):
     documents, metadatas, distances = search_chunks(question, top_k=1)
-
-    has_relevant = bool(documents) and relevance_check(question, documents)
 
     messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
 
@@ -142,7 +116,7 @@ def get_answer(question, history=None):
                 content = content[:200] + '...'
             messages.append({'role': role, 'content': content})
 
-    if has_relevant:
+    if bool(documents):
         context_parts = []
         for i, doc in enumerate(documents):
             page = metadatas[i].get('page', '') if metadatas and i < len(metadatas) else ''
