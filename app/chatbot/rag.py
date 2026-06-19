@@ -127,30 +127,33 @@ def relevance_check(query, chunks):
 
 
 def get_answer(question, history=None):
-    documents, metadatas, distances = search_chunks(question, top_k=2)
+    documents, metadatas, distances = search_chunks(question, top_k=1)
 
     has_relevant = bool(documents) and relevance_check(question, documents)
 
     messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
 
     if history:
-        limited = history[-4:]
+        limited = history[-2:]
         for entry in limited:
             role = 'user' if entry.get('role') == 'user' else 'assistant'
-            messages.append({'role': role, 'content': entry.get('content', '')})
+            content = entry.get('content', '')
+            if len(content) > 200:
+                content = content[:200] + '...'
+            messages.append({'role': role, 'content': content})
 
     if has_relevant:
         context_parts = []
         for i, doc in enumerate(documents):
             page = metadatas[i].get('page', '') if metadatas and i < len(metadatas) else ''
             page_str = f' (стр. {page})' if page else ''
-            truncated = doc[:300] + ('...' if len(doc) > 300 else '')
+            truncated = doc[:200] + ('...' if len(doc) > 200 else '')
             context_parts.append(f'Фрагмент {i + 1}{page_str}:\n{truncated}')
 
         context = '\n\n'.join(context_parts)
-        messages.append({'role': 'user', 'content': f'Контекст из учебника:\n\n{context}\n\nВопрос ученика: {question}'})
+        messages.append({'role': 'user', 'content': f'Контекст:\n\n{context}\n\nВопрос: {question}'})
     else:
-        messages.append({'role': 'user', 'content': f'Вопрос ученика: {question}'})
+        messages.append({'role': 'user', 'content': f'Вопрос: {question}'})
 
     llm = get_llm_client()
     try:
@@ -158,7 +161,7 @@ def get_answer(question, history=None):
             model=get_llm_model(),
             messages=messages,
             temperature=0.3,
-            max_tokens=300,
+            max_tokens=100,
         )
         answer = response.choices[0].message.content
     except Exception as e:
@@ -169,7 +172,7 @@ def get_answer(question, history=None):
                     model=get_llm_model(),
                     messages=messages,
                     temperature=0.3,
-                    max_tokens=100,
+                    max_tokens=50,
                 )
                 answer = response.choices[0].message.content
             except Exception as e2:
