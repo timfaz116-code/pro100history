@@ -178,7 +178,7 @@ def get_answer(question, history=None):
             raise Exception(f'OpenRouter error: {err_str[:500]}')
 
     sources = []
-    base_pdf_url = 'https://raw.githubusercontent.com/timfaz116-code/pro100history/main/knowledge/history_textbook.pdf'
+    base_pdf_url = 'https://cdn.jsdelivr.net/gh/timfaz116-code/pro100history/knowledge/history_textbook.pdf'
     for i, doc in enumerate(documents):
         page = metadatas[i].get('page', '') if metadatas and i < len(metadatas) else ''
         sources.append({
