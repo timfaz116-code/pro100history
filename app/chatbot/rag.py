@@ -7,31 +7,20 @@ import warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 from openai import OpenAI
-from app.chatbot.prompts import SYSTEM_PROMPT
+from app.chatbot.prompts import SYSTEM_PROMPT, RELEVANCE_CHECK_PROMPT
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB_PATH = os.path.join(BASE_DIR, 'storage', 'index.db')
 EMBEDDING_DIM = 1536
 
 
-def get_openai_client():
+def get_llm_client():
     api_key = os.environ.get('OPENAI_API_KEY', '')
     base_url = os.environ.get('OPENAI_BASE_URL', None)
     kwargs = {'api_key': api_key}
     if base_url:
         kwargs['base_url'] = base_url
     return OpenAI(**kwargs)
-
-
-def get_llm_client():
-    model = get_llm_model()
-    ml = model.lower()
-    if 'gemini' in ml:
-        return OpenAI(
-            api_key=os.environ.get('GEMINI_API_KEY', ''),
-            base_url='https://generativelanguage.googleapis.com/v1beta/openai/'
-        )
-    return get_openai_client()
 
 
 def get_embedding_model():
@@ -69,8 +58,8 @@ def cosine_similarity(a, b):
 
 
 def embed_text(text):
-    client = get_openai_client()
-    response = client.embeddings.create(
+    llm = get_llm_client()
+    response = llm.embeddings.create(
         model=get_embedding_model(),
         input=text,
     )
@@ -102,57 +91,63 @@ def search_chunks(query, top_k=5):
     return documents, metadatas, distances
 
 
+def relevance_check(query, chunks):
+    if not chunks or not any(c.strip() for c in chunks):
+        return False
+    combined = '\n\n'.join(chunks[:3])
+    prompt = f"""Фрагменты учебника:
+{combined}
+
+Вопрос ученика: {query}
+
+{RELEVANCE_CHECK_PROMPT}"""
+    try:
+        llm = get_llm_client()
+        response = llm.chat.completions.create(
+            model=get_llm_model(),
+            messages=[{'role': 'user', 'content': prompt}],
+            temperature=0,
+            max_tokens=10,
+        )
+        answer = response.choices[0].message.content.strip().lower()
+        return 'да' in answer
+    except Exception:
+        return True
+
+
 def get_answer(question, history=None):
-    documents, metadatas, distances = search_chunks(question, top_k=1)
+    documents, metadatas, distances = search_chunks(question, top_k=5)
+
+    has_relevant = bool(documents) and relevance_check(question, documents)
 
     messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
 
     if history:
-        limited = history[-2:]
+        limited = history[-8:]
         for entry in limited:
             role = 'user' if entry.get('role') == 'user' else 'assistant'
-            content = entry.get('content', '')
-            if len(content) > 200:
-                content = content[:200] + '...'
-            messages.append({'role': role, 'content': content})
+            messages.append({'role': role, 'content': entry.get('content', '')})
 
-    if bool(documents):
+    if has_relevant:
         context_parts = []
         for i, doc in enumerate(documents):
             page = metadatas[i].get('page', '') if metadatas and i < len(metadatas) else ''
             page_str = f' (стр. {page})' if page else ''
-            truncated = doc[:200] + ('...' if len(doc) > 200 else '')
-            context_parts.append(f'Фрагмент {i + 1}{page_str}:\n{truncated}')
+            context_parts.append(f'Фрагмент {i + 1}{page_str}:\n{doc}')
 
         context = '\n\n'.join(context_parts)
-        messages.append({'role': 'user', 'content': f'Контекст:\n\n{context}\n\nВопрос: {question}'})
+        messages.append({'role': 'user', 'content': f'Контекст из учебника:\n\n{context}\n\nВопрос ученика: {question}'})
     else:
-        messages.append({'role': 'user', 'content': f'Вопрос: {question}'})
+        messages.append({'role': 'user', 'content': f'Вопрос ученика: {question}'})
 
     llm = get_llm_client()
-    try:
-        response = llm.chat.completions.create(
-            model=get_llm_model(),
-            messages=messages,
-            temperature=0.3,
-            max_tokens=100,
-        )
-        answer = response.choices[0].message.content
-    except Exception as e:
-        err_str = str(e)
-        if '402' in err_str or 'Insufficient credits' in err_str:
-            try:
-                response = llm.chat.completions.create(
-                    model=get_llm_model(),
-                    messages=messages,
-                    temperature=0.3,
-                    max_tokens=50,
-                )
-                answer = response.choices[0].message.content
-            except Exception as e2:
-                raise Exception(f'OpenRouter error: {err_str[:300]}. Fallback also failed: {str(e2)[:200]}')
-        else:
-            raise Exception(f'OpenRouter error: {err_str[:500]}')
+    response = llm.chat.completions.create(
+        model=get_llm_model(),
+        messages=messages,
+        temperature=0.3,
+        max_tokens=1000,
+    )
+    answer = response.choices[0].message.content
 
     sources = []
     for i, doc in enumerate(documents):
