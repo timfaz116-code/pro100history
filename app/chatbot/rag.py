@@ -145,7 +145,7 @@ def get_answer(question, history=None):
         model=get_llm_model(),
         messages=messages,
         temperature=0.3,
-        max_tokens=1000,
+        max_tokens=200,
     )
     answer = response.choices[0].message.content
 
